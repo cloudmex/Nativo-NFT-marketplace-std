@@ -111,10 +111,11 @@ impl Contract {
         //get the sale object by removing the sale
         let sale = self.internal_remove_sale(nft_contract_id.clone(), token_id.clone());
 
-        // obtenr el feee
-        //10 .-> .3
-        //9.7
+        //pay the fee comision
+        let amount_to_pay  = self.pay_the_market_fee(price);
+       
         
+
         //initiate a cross contract call to the nft contract. This will transfer the token to the buyer and return
         //a payout object used for the market to distribute funds to the appropriate accounts.
         ext_contract::nft_transfer_payout(
@@ -126,7 +127,7 @@ impl Contract {
                 the price that the token was purchased for. This will be used in conjunction with the royalty percentages
                 for the token in order to determine how much money should go to which account. 
             */
-            price,
+            amount_to_pay,
 			10, //the maximum amount of accounts the market can payout at once (this is limited by GAS)
             nft_contract_id, //contract to initiate the cross contract call to
             1, //yoctoNEAR to attach to the call
@@ -136,7 +137,7 @@ impl Contract {
         //resolve purchase will take the payout object returned from the nft_transfer_payout and actually pay the accounts
         .then(ext_self::resolve_purchase(
             buyer_id, //the buyer and price are passed in incase something goes wrong and we need to refund the buyer
-            price,
+            amount_to_pay,
             env::current_account_id(), //we are invoking this function on the current contract
             NO_DEPOSIT, //don't attach any deposit
             GAS_FOR_ROYALTIES, //GAS attached to the call to payout royalties
@@ -209,6 +210,34 @@ impl Contract {
         //return the price payout out
         price
     }
+
+
+   pub fn pay_the_market_fee(&self,price:U128) -> U128 {
+        //send the comision to the treasury
+        let newprice: u128  = u128::try_from(price).unwrap();
+        let commision = newprice as f64 * self.fee_percent;
+        env::log_str("comision");
+        env::log_str(&commision.to_string());
+        let comisionu128 = commision as u128;
+        env::log_str("comision to pay");
+        env::log_str(&comisionu128.to_string());
+
+        Promise::new(self.treasure_id.clone()).transfer(commision as u128);
+
+           
+       env::log_str("payment without comisiion");
+
+        let comision_payed = newprice   - commision as u128;
+        env::log_str(&comision_payed.clone().to_string());
+       
+ 
+        let newprice_lesscomision: U128  = U128::try_from(comision_payed).unwrap();
+         
+
+ 
+        return newprice_lesscomision;
+
+       }
 }
 
 //this is the cross contract call that we call on our own contract. 

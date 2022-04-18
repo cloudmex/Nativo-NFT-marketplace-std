@@ -67,7 +67,11 @@ pub struct Contract {
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
     //keep track of the storage that accounts have payed
     pub storage_deposits: LookupMap<AccountId, Balance>,
+    pub fee_percent :f64,
+    pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
+
 }
+
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct OldContract {
     //keep track of the owner of the contract
@@ -77,6 +81,16 @@ pub struct OldContract {
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
     pub storage_deposits: LookupMap<AccountId, Balance>,
+    pub fee_percent :f64,
+    pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
+}
+
+//structure for whitelist information
+#[derive(BorshDeserialize, BorshSerialize,Clone)]
+pub struct ExternalContract {
+    register_address: AccountId,
+    contract_name: String,
+    contract_balance:u128,
 }
 /// Helper structure to for keys of the persistent collections.
 #[derive(BorshStorageKey, BorshSerialize)]
@@ -90,6 +104,7 @@ pub enum StorageKey {
     ByNFTTokenTypeInner { token_type_hash: CryptoHash },
     FTTokenIds,
     StorageDeposits,
+    ContractAllowed,
 }
 
 #[near_bindgen]
@@ -110,6 +125,9 @@ impl Contract {
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
+            fee_percent:0.03,
+            whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
+
         };
 
         //return the Contract object
@@ -147,7 +165,7 @@ impl Contract {
 
     
     fn internal_storage_deposit(&mut self, account_id: Option<AccountId>) {
-        env::log(b"internal storage");
+        
         //get the account ID to pay for storage for
         let storage_account_id = account_id 
             //convert the valid account ID into an account ID
@@ -157,7 +175,7 @@ impl Contract {
 
         //get the deposit value which is how much the user wants to add to their storage
         let deposit = env::attached_deposit();
-        env::log_str(&deposit.clone().to_string());
+         
         //make sure the deposit is greater than or equal to the minimum storage for a sale
         assert!(
             deposit >= STORAGE_PER_SALE,
@@ -170,7 +188,7 @@ impl Contract {
         //add the deposit to their balance
         balance += deposit;
         //insert the balance back into the map for that account ID
-        env::log(b"ends internal");
+        
         self.storage_deposits.insert(&storage_account_id, &balance);
     }
 

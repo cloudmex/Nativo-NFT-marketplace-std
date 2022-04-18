@@ -59,7 +59,9 @@ impl Contract {
             sales: old_state.sales,
             by_owner_id: old_state.by_owner_id,
             by_nft_contract_id: old_state.by_nft_contract_id,
-            storage_deposits: old_state.storage_deposits
+            storage_deposits: old_state.storage_deposits,
+            fee_percent:old_state.fee_percent,
+            whitelist_contracts:old_state.whitelist_contracts,
         }
     }
 

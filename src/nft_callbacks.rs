@@ -36,7 +36,7 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         approval_id: u64,
         msg: String,
     ) {
-
+        self.is_white_listed();
         self.internal_storage_deposit(Some(owner_id.clone()));
         // get the contract ID which is the predecessor
         let nft_contract_id = env::predecessor_account_id();
@@ -81,7 +81,7 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
 
         //create the unique sale ID which is the contract + DELIMITER + token ID
         let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
-        env::log(b"antes de hacer el insert en las ventas");
+         
         //insert the key value pair into the sales map. Key is the unique ID. value is the sale object
         self.sales.insert(
             &contract_and_token_id,
@@ -134,6 +134,5 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         self.by_nft_contract_id
             .insert(&nft_contract_id, &by_nft_contract_id);
 
-            env::log(b"end calback storage");
-    }
+     }
 }
