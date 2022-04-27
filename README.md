@@ -8,6 +8,7 @@
 `./build.sh`
 ### Set the market contract global
 `export CONTRACT="v1.nativo-market.testnet" `
+export CONTRACT="dev-1650923930420-44090012366220" 
 ### initialize the market contract
 `near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testnet`
 ### to pay the storage before to list a token
@@ -44,15 +45,15 @@
 
  
 ### get the sales  by owner 
-`near view $CONTRACT get_sales_by_owner_id '{"account_id":"customnativo.testnet","from_index":"0","limit":25}'`
+`near view $CONTRACT get_sales_by_owner_id '{"account_id":"joehank.testnet","from_index":"0","limit":25}'`
 
 ### get the storage balance for the account
 `near view $CONTRACT storage_balance_of  '{"account_id":"alexiaab.testnet"}'`
 ### get the total sales for a contract address.
-`near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"hardtest.nativo-minter.testnet"}'`
+`near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"hardtest.nativo-minter.testnet","from_index":"0","limit":25}'`
 
 ### update the price for a token_id
-`near call stdmarket.testnet update_price '{"nft_contract_id":"mktstandard.testnet","token_id": "227","price":"10000000000000000000000"}' --account_id joehank.testnet --depositYocto 1`
+`near call $CONTRACT update_price '{"nft_contract_id":"mktstandard.testnet","token_id": "227","price":"10000000000000000000000"}' --account_id joehank.testnet --depositYocto 1`
 
 ### make a offer for a token 
 `near call $CONTRACT offer '{"account_id":"dokxo.testnet","nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"9"}' --accountId nativo-market.testnet --deposit 1 --gas=300000000000000`
@@ -60,7 +61,8 @@
 ### make a deposit for storage payment 
 `near call $CONTRACT storage_deposit '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet —deposit 0.1`
 
-
+### remove the token from the market
+`near call $CONTRACT remove_sale '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id": "2085"}' --account_id dokxo.testnet --depositYocto 1`
  
 
 
@@ -106,3 +108,10 @@ near call $CONTRACT pay_the_market_fee '{"price":1000}' --accountId dokxo.testne
 
 near view $CONTRACT get_supply_sales
 
+repeat 10000 {near call hardtest.nativo-minter.testnet nft_mint '{"metadata": {"title": "Tokens en Masa de dokxo  ", "description": "Es una nube jejeje x2", "media": "bafybeiespmva6en5xy3giajcewap3avkypou4ylaqguymrrol2ccumz7le"}, "receiver_id": "dokxo.testnet", "perpetual_royalties": {"dokxo.testnet": 2000}}' --accountId dokxo.testnet --amount 0.1};
+
+near call $CONTRACT add_bid '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet    
+
+
+
+near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_sale\",\"price\":\"10000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1

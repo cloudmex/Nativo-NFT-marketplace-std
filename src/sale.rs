@@ -1,9 +1,19 @@
 use crate::*;
 use near_sdk::promise_result_as_success;
 
-//struct that holds important information about each sale on the market
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
 #[serde(crate = "near_sdk::serde")]
+pub struct Bid {
+    pub bidder_id: AccountId,
+    pub price: U128,
+}
+pub type Bids = Vec<Bid>;
+
+//struct that holds important information about each sale on the market
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
+#[serde(crate = "near_sdk::serde")]
+
 pub struct Sale {
     //owner of the sale
     pub owner_id: AccountId,
@@ -14,7 +24,24 @@ pub struct Sale {
     //actual token ID for sale
     pub token_id: String,
     //sale price in yoctoNEAR that the token is listed for
-    pub sale_conditions: SalePriceInYoctoNear,
+    pub price: SalePriceInYoctoNear,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ft_token_id: Option<AccountId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub buyer_id: Option<AccountId>, // offer
+    
+    
+    pub is_auction: Option<bool>,
+   
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creator_id: Option<AccountId>,
+    
+    pub bids: Option<Bids>,
 }
 
 #[near_bindgen]
@@ -59,7 +86,7 @@ impl Contract {
         );
         
         //set the sale conditions equal to the passed in price
-        sale.sale_conditions = price;
+        sale.price = price;
         //insert the sale back into the map for the unique sale ID
         self.sales.insert(&contract_and_token_id, &sale);
     }
@@ -84,7 +111,7 @@ impl Contract {
         assert_ne!(sale.owner_id, buyer_id, "Cannot bid on your own sale.");
         
         //get the u128 price of the token (dot 0 converts from U128 to u128)
-        let price = sale.sale_conditions.0;
+        let price = sale.price.0;
 
         //make sure the deposit is greater than the price
         assert!(deposit >= price, "Attached deposit must be greater than or equal to the current price: {:?}", price);
@@ -211,8 +238,8 @@ impl Contract {
         price
     }
 
-
-   pub fn pay_the_market_fee(&self,price:U128) -> U128 {
+    #[private]
+    pub fn pay_the_market_fee(&self,price:U128) -> U128 {
         //send the comision to the treasury
         let newprice: u128  = u128::try_from(price).unwrap();
         let commision = newprice as f64 * self.fee_percent;
@@ -238,6 +265,225 @@ impl Contract {
         return newprice_lesscomision;
 
        }
+ 
+   /* pub fn add_bid(&self,nft_contract_id: AccountId,token_id: AccountId) {
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+        let mut actual_sale_info = self.sales.get(&contract_and_token_id.clone()).expect("Nativo: the token id does not exist");
+                 //if dont exist throws a expect err
+                 
+        let bidder_address = env::signer_account_id();
+        let bid_amount = env::attached_deposit();
+        let price_u128=  u128::try_from(actual_sale_info.clone().price).unwrap();
+
+       let new_bid= Bid {
+              bidder_id: bidder_address ,
+              price: bid_amount.into()   
+        };
+        let mut bids = actual_sale_info.bids.unwrap_or(Vec::new());
+
+        if !bids.is_empty() {
+            let current_bid = &bids[bids.len() - 1];
+
+            assert!(
+                bid_amount > current_bid.price.0,
+                "The new bid must more than the current bid price: {:?}",
+                current_bid.price
+            );
+
+            assert!(
+                bid_amount > price_u128,
+                "The new bid must to be more o equal to the base bid price: {:?}",
+                U128(price_u128)
+            );
+
+            // refund
+            Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
+
+            // always keep 1 bid for now
+            bids.remove(bids.len() - 1);
+        } else {
+            assert!(
+                bid_amount > price_u128,
+                "Paras: Can't pay less than or equal to starting price: {}",
+                price_u128
+            );
+
+        }
+
+        bids.push(new_bid);
+        actual_sale_info.bids = Some(bids);
+        self.sales.insert(&contract_and_token_id, &actual_sale_info);
+
+      
+        
+       }*/
+
+        // Auction bids
+    #[payable]
+    pub fn add_bid2(
+        &mut self,
+        nft_contract_id: AccountId,
+        token_id: TokenId,
+         
+    ) {
+        
+
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+        let mut market_data = self
+            .sales
+            .get(&contract_and_token_id)
+            .expect("The token does not exist");
+
+        let bidder_id = env::predecessor_account_id();
+        let bid_amount = env::attached_deposit();
+        let price_u128=  u128::try_from(market_data.price).unwrap();
+
+        assert!(
+            bidder_id != market_data.owner_id,
+            "{} you can not bid your own nft",
+            bidder_id
+        );
+        market_data.is_auction.expect("the token does not accept a bid");
+        // the new bid info
+        let new_bid = Bid {
+            bidder_id: bidder_id.clone(),
+            price: bid_amount.into(),
+        };
+        // get the bid vec void or not
+        let mut bids = market_data.bids.unwrap_or(Vec::new());
+        //to add a new bid we must to verify if the token was listed as sale or auction
+        //if the token was listed as sale we can add a new bid less o equals to the sale price
+        if market_data.is_auction== Some(false){ //this is a sale
+            env::log_str("was listed as sale");
+
+            //assert that the bid is less than the sale price
+            assert!(
+                bid_amount <= market_data.price.0,
+                "You must to pay less than the sale price: {:?}",
+                market_data.price.0
+            );
+
+
+            if !bids.is_empty() {
+                let current_bid = &bids[bids.len() - 1];
+    
+                assert!(
+                    bid_amount > current_bid.price.0,
+                    "You must to pay at more or at least equal to current bid price: {:?}",
+                    current_bid.price
+                );
+    
+                /* assert!(
+                    bid_amount > price_u128,
+                    "you must to pay at least the starting price: {:?}",
+                    U128(price_u128)
+                ); */
+    
+                // refund
+                Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
+    
+                // always keep 1 bid for now
+                bids.remove(bids.len() - 1);
+            } else {
+                assert!(
+                    bid_amount > 1,
+                    "you must to pay at least one yocto: {:?}",
+                    U128(price_u128)
+                );
+    
+            }
+
+            bids.push(new_bid);
+            market_data.bids = Some(bids);
+            self.sales.insert(&contract_and_token_id, &market_data);
+    
+        }//else the token as auction the bid must to be more than  start price
+        else{
+            env::log_str("was listed as auction");
+            //assert that the bid is less than the sale price
+            assert!(
+                bid_amount > market_data.price.0,
+                "You must to pay more than the auction price: {:?}",
+                market_data.price.0
+            );
+
+
+            if !bids.is_empty() {
+                let current_bid = &bids[bids.len() - 1];
+    
+                assert!(
+                    bid_amount > current_bid.price.0,
+                    "You must to pay at more or at least equal to current bid price: {:?}",
+                    current_bid.price
+                );
+    
+                /* assert!(
+                    bid_amount > price_u128,
+                    "you must to pay at least the starting price: {:?}",
+                    U128(price_u128)
+                ); */
+    
+                // refund
+                Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
+    
+                // always keep 1 bid for now
+                bids.remove(bids.len() - 1);
+            } else {
+                assert!(
+                    bid_amount > market_data.price.0,
+                    "2_You must to pay more than the auction price: {:?}",
+                    market_data.price.0
+                );
+    
+            }
+
+            bids.push(new_bid);
+            market_data.bids = Some(bids);
+            self.sales.insert(&contract_and_token_id, &market_data);
+    
+        }
+        
+
+        
+
+       
+
+       
+        
+    }
+
+    #[payable]
+    pub fn accept_bid(&mut self, nft_contract_id: AccountId, token_id: TokenId) {
+        assert_one_yocto();
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+        let mut market_data = self
+            .sales
+            .get(&contract_and_token_id)
+            .expect("The token does not exist");
+
+        assert_eq!(
+            market_data.owner_id,
+            env::predecessor_account_id(),
+            "Only owner can accept the  higest bid"
+        );
+
+        assert!(
+            market_data.is_auction==Some(false),
+            "the tokens is not in an auction "
+        );
+
+        let mut bids = market_data.bids.unwrap();
+        let selected_bid = bids.remove(bids.len() - 1);
+        market_data.bids = Some(bids);
+        self.sales.insert(&contract_and_token_id, &market_data);
+
+       /*  self.process_purchase(
+            market_data.nft_contract_id.parse::<AccountId>(),
+            token_id,
+            selected_bid.bidder_id.clone(),
+            selected_bid.price.clone().0,
+        ); */
+    }
 }
 
 //this is the cross contract call that we call on our own contract. 
