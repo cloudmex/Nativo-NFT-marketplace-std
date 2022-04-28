@@ -43,7 +43,9 @@ export CONTRACT="dev-1650923930420-44090012366220"
 ## Crear una nueva propuesta para la actualizacion del tesorero del market desde la DAO(testeado)
 `sputnikdao proposal call  $CONTRACT set_treasury '{"new_account":"dokxo.testnet"}' --daoAcc nativo-dao --accountId nativo-market.testnet`
 
- 
+### get a specify sale 
+`near call $CONTRACT get_sale '{"nft_contract_token":"hardtest.nativo-minter.testnet.2085"}' --accountId dokxo.testnet`
+
 ### get the sales  by owner 
 `near view $CONTRACT get_sales_by_owner_id '{"account_id":"joehank.testnet","from_index":"0","limit":25}'`
 
@@ -64,6 +66,31 @@ export CONTRACT="dev-1650923930420-44090012366220"
 ### remove the token from the market
 `near call $CONTRACT remove_sale '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id": "2085"}' --account_id dokxo.testnet --depositYocto 1`
  
+
+
+
+# Auctions
+### list as sales
+
+`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
+
+### list as auction
+`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_auction\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
+
+
+### add a bid
+`near call $CONTRACT add_bid '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId darkdokxo.testnet    --deposit 1 `
+### procees auction
+#### the owner can accept a offer it must to add gass by the XCC to the minter
+`near call $CONTRACT process_bid '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085","response":true}' --accountId dokxo.testnet  --depositYocto 1 --gas=300000000000000`
+#### the owner can decline a offer  
+`near call $CONTRACT process_bid '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085","response":false}' --accountId dokxo.testnet  --depositYocto 1  `
+#### the bidder can decline a offer 
+#### no one else can accept or decline a offer 
+
+
+
+
 
 
 
@@ -115,3 +142,4 @@ near call $CONTRACT add_bid '{"nft_contract_id":"hardtest.nativo-minter.testnet"
 
 
 near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_sale\",\"price\":\"10000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1
+

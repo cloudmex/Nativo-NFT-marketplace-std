@@ -320,7 +320,7 @@ impl Contract {
 
         // Auction bids
     #[payable]
-    pub fn add_bid2(
+    pub fn add_bid(
         &mut self,
         nft_contract_id: AccountId,
         token_id: TokenId,
@@ -453,36 +453,92 @@ impl Contract {
     }
 
     #[payable]
-    pub fn accept_bid(&mut self, nft_contract_id: AccountId, token_id: TokenId) {
+    pub fn process_bid(&mut self, nft_contract_id: AccountId, token_id: TokenId,response:bool) {
         assert_one_yocto();
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
-        let mut market_data = self
-            .sales
-            .get(&contract_and_token_id)
-            .expect("The token does not exist");
+        //get the actual nft information
+        let mut market_data = self.sales.get(&contract_and_token_id).expect("The token does not exist");
+        
+        let caller = env::signer_account_id();
+        // get the bid vec void or not
+        let mut bids = market_data.clone().bids.unwrap_or(Vec::new());
+        // keep the bid vec 
+        let current_bid = &bids[bids.len() - 1];
 
-        assert_eq!(
-            market_data.owner_id,
-            env::predecessor_account_id(),
-            "Only owner can accept the  higest bid"
-        );
+        //if the signer is the owner he can accept or decline
+        if caller == market_data.owner_id {
+            // accept
+            env::log_str("it's the owner");
+            if response==true {
+                  //remove from the sales 
+                    let selected_bid = bids.clone().remove(&bids.len() - 1);
+                    market_data.bids = Some(bids.clone());
+                    self.sales.insert(&contract_and_token_id, &market_data.clone());
+                  //and process the purchase
+                      self.process_purchase(
+                        AccountId::new_unchecked(market_data.clone().nft_contract_id),
+                            token_id,
+                            selected_bid.price.clone().0.into(),
+                            selected_bid.bidder_id.clone(),
+                        );  
+            
+            }//decline
+            else {
+                env::log_str("decline the offer");
+                //remove from the sales 
+                
+                    //let selected_bid = bids.clone().remove(&bids.len() - 1);
+                    market_data.bids = Some(Vec::new());
+                    self.sales.insert(&contract_and_token_id, &market_data.clone());
+            
+                //refound the bid to the bidder
+                Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
+    
+            }
+           
+           
+   
+        }else{
+            env::log_str("may its the bidder");
+            // if the signer is the bidder he just can decline
+          if !bids.is_empty(){
+            let current_bid = &bids[bids.len() - 1];
+            if caller == current_bid.bidder_id{
+                env::log_str("decline the offer");
+                //decline
+                    //remove from the sales 
+                         
+                        market_data.bids = Some(Vec::new());
+                        self.sales.insert(&contract_and_token_id, &market_data.clone());
 
-        assert!(
-            market_data.is_auction==Some(false),
-            "the tokens is not in an auction "
-        );
+                    //refound the bid to the bidder
+                        Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
 
-        let mut bids = market_data.bids.unwrap();
-        let selected_bid = bids.remove(bids.len() - 1);
-        market_data.bids = Some(bids);
-        self.sales.insert(&contract_and_token_id, &market_data);
+            }else{
+                 
+                assert!(
+                    market_data.owner_id ==caller || current_bid.clone().bidder_id ==caller,
+                    "you're not the owner or bidder  {}",
+                    contract_and_token_id 
+                );
+                
+                 
+            }
+          }else {
+            assert!(
+                bids.is_empty()==true,
+                "this token haven't an active offer:  {}",
+                contract_and_token_id 
+            );
+               
+          }
+        }
+        
 
-       /*  self.process_purchase(
-            market_data.nft_contract_id.parse::<AccountId>(),
-            token_id,
-            selected_bid.bidder_id.clone(),
-            selected_bid.price.clone().0,
-        ); */
+       
+       
+
+       
     }
 }
 
