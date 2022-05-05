@@ -8,7 +8,7 @@
 `./build.sh`
 ### Set the market contract global
 `export CONTRACT="v1.nativo-market.testnet" `
-export CONTRACT="dev-1651700996675-98618622798947" 
+export CONTRACT="dev-1651792932660-37249847112398" 
 ### initialize the market contract
 `near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testnet`
 ### to pay the storage before to list a token
@@ -69,10 +69,33 @@ export CONTRACT="dev-1651700996675-98618622798947"
 
 
 
+
+
+# Offert out of the market
+
+
+### 1 this offer can be done without need to be listed in sales
+`near call $CONTRACT add_offer  '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085","owner_id":"darkdokxo.testnet"}' --accountId dokxo.testnet  --deposit 0.001 ` 
+
+### 2 this commad returns the offer for a token if exists
+`near view $CONTRACT get_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet`
+
+### 3.1 this commad can be called by the owner or the bidder,it returns the amount payed to the bidder and remove the offer
+`near call $CONTRACT delete_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet  --depositYocto 1 `
+
+### 4 list as sales
+
+`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1651700996675-98618622798947","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
+
+
+#  5 this command only can be called by the owner to accept the offer,paying the royalites,the nfv and resolving the sale
+### it only can be called after the token is listed to the market(call this function after  nft_on_approve )
+`near call $CONTRACT accept_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet  --depositYocto 1  --gas=300000000000000`
+
 # Auctions
 ### list as sales
 
-`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1651605548307-81761897375693","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
+`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1651700996675-98618622798947","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
 
 ### list as auction
 `near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_auction\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
@@ -141,9 +164,6 @@ near call $CONTRACT add_bid '{"nft_contract_id":"hardtest.nativo-minter.testnet"
 
 
 
-near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1651700996675-98618622798947","msg":"{\"market_type\":\"on_sale\",\"price\":\"10000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1
+near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"22919","account_id":"dev-1651700996675-98618622798947","msg":"{\"market_type\":\"on_sale\",\"price\":\"10000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId darkdokxo.testnet --deposit 0.1
 
 
-//offert out of the market
-
-near call $CONTRACT add_offer_out_market '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet    
