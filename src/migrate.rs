@@ -16,7 +16,7 @@ impl Contract {
         //input is code:<Vec<u8> on REGISTER 0
         //log!("bytes.length {}", code.unwrap().len());
         const GAS_FOR_UPGRADE: u64 = 20 * TGAS; //gas occupied by this fn
-        const BLOCKCHAIN_INTERFACE_NOT_SET_ERR: &str = "Blockchain interface not set.";
+       // const BLOCKCHAIN_INTERFACE_NOT_SET_ERR: &str = "Blockchain interface not set.";
         //after upgrade we call *pub fn migrate()* on the NEW CODE
         let current_id = env::current_account_id();
         let migrate_method_name = "migrate".as_bytes().to_vec();
@@ -62,6 +62,8 @@ impl Contract {
             storage_deposits: old_state.storage_deposits,
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
+            offers: LookupMap::new(StorageKey::OffersOutMarket),
+
         }
     }
 

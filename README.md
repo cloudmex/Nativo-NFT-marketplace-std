@@ -8,7 +8,7 @@
 `./build.sh`
 ### Set the market contract global
 `export CONTRACT="v1.nativo-market.testnet" `
-export CONTRACT="dev-1650923930420-44090012366220" 
+export CONTRACT="dev-1651605548307-81761897375693" 
 ### initialize the market contract
 `near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testnet`
 ### to pay the storage before to list a token
@@ -58,7 +58,7 @@ export CONTRACT="dev-1650923930420-44090012366220"
 `near call $CONTRACT update_price '{"nft_contract_id":"mktstandard.testnet","token_id": "227","price":"10000000000000000000000"}' --account_id joehank.testnet --depositYocto 1`
 
 ### make a offer for a token 
-`near call $CONTRACT offer '{"account_id":"dokxo.testnet","nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"9"}' --accountId nativo-market.testnet --deposit 1 --gas=300000000000000`
+`near call $CONTRACT offer '{"account_id":"darkdokxo.testnet","nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId nativo-market.testnet --deposit 1 --gas=300000000000000`
 
 ### make a deposit for storage payment 
 `near call $CONTRACT storage_deposit '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet —deposit 0.1`
@@ -72,7 +72,7 @@ export CONTRACT="dev-1650923930420-44090012366220"
 # Auctions
 ### list as sales
 
-`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
+`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1651605548307-81761897375693","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`
 
 ### list as auction
 `near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1650923930420-44090012366220","msg":"{\"market_type\":\"on_auction\",\"price\":\"1000000000000000000000000\",\"title\":\"Dark JoeHank\",\"media\":\"bafybeifocdpvwqqlgnq3nx56ran6tynrlyb4pbbzwsrgglulf2gweqmt5m\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1`

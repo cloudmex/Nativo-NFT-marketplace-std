@@ -1,6 +1,6 @@
 use crate::*;
 use near_sdk::promise_result_as_success;
-
+use std::convert::TryInto;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -10,6 +10,15 @@ pub struct Bid {
 }
 pub type Bids = Vec<Bid>;
 
+const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
+ 
+
+ 
+#[ext_contract(ext_nft)]
+pub trait ExternsContract {
+    fn mint(&self, account_id:AccountId,amount: String) -> String;
+    fn reward_player(&self,player_owner_id: String,tokens_mint: String) -> String;
+}
 //struct that holds important information about each sale on the market
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -37,12 +46,16 @@ pub struct Sale {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub media: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub creator_id: Option<AccountId>,
     
     pub bids: Option<Bids>,
 }
+
 
 #[near_bindgen]
 impl Contract {
@@ -53,11 +66,25 @@ impl Contract {
         //assert that the user has attached exactly 1 yoctoNEAR (for security reasons)
         assert_one_yocto();
         //get the sale object as the return value from removing the sale internally
-        let sale = self.internal_remove_sale(nft_contract_id.into(), token_id);
+        let sale = self.internal_remove_sale(nft_contract_id.clone().into(), token_id.clone());
         //get the predecessor of the call and make sure they're the owner of the sale
         let owner_id = env::predecessor_account_id();
         //if this fails, the remove sale will revert
         assert_eq!(owner_id, sale.owner_id, "Must be sale owner");
+
+        env::log_str(
+            &json!({
+            "type": "remove_sale",
+            "params": {
+                "owner_id": owner_id.clone(),
+                "nft_contract_id": nft_contract_id.clone(),
+                "token_id": token_id.clone(),
+               
+              
+            }
+        })
+                .to_string(),
+        );
     }
 
     //updates the price for a sale on the market
@@ -72,7 +99,7 @@ impl Contract {
         assert_one_yocto();
         
         //create the unique sale ID from the nft contract and token
-        let contract_id: AccountId = nft_contract_id.into();
+        let contract_id: AccountId = nft_contract_id.clone().into();
         let contract_and_token_id = format!("{}{}{}", contract_id, DELIMETER, token_id);
         
         //get the sale object from the unique sale ID. If there is no token, panic. 
@@ -88,7 +115,22 @@ impl Contract {
         //set the sale conditions equal to the passed in price
         sale.price = price;
         //insert the sale back into the map for the unique sale ID
-        self.sales.insert(&contract_and_token_id, &sale);
+        self.sales.insert(&contract_and_token_id, &sale.clone());
+
+
+        env::log_str(
+            &json!({
+            "type": "update_price",
+            "params": {
+                "owner_id": sale.owner_id,
+                "nft_contract_id": nft_contract_id,
+                "token_id": token_id,
+                "price": price,
+              
+            }
+        })
+                .to_string(),
+        );
     }
 
     //place an offer on a specific sale. The sale will go through as long as your deposit is greater than or equal to the list price
@@ -99,7 +141,7 @@ impl Contract {
         assert!(deposit > 0, "Attached deposit must be greater than 0");
 
         //convert the nft_contract_id from a AccountId to an AccountId
-        let contract_id: AccountId = nft_contract_id.into();
+        let contract_id: AccountId = nft_contract_id.clone().into();
         //get the unique sale ID (contract + DELIMITER + token ID)
         let contract_and_token_id = format!("{}{}{}", contract_id, DELIMETER, token_id);
         
@@ -118,10 +160,48 @@ impl Contract {
 
         //process the purchase (which will remove the sale, transfer and get the payout from the nft contract, and then distribute royalties) 
         self.process_purchase(
-            contract_id,
-            token_id,
+            contract_id.clone(),
+            token_id.clone(),
             U128(deposit),
-            buyer_id,
+            buyer_id.clone(),
+        );
+
+        //go to the ntv ft to pay 
+        //let stt ="Tokens a minar".to_string() + &(deposit.clone()*1000000000000000000000000).to_string();
+        //
+      
+
+                    let tokens_to_mint = deposit.clone() * 3;
+                    // NTV for the buyer
+                    ext_nft::mint(
+                        buyer_id.clone(),
+                        tokens_to_mint.to_string(),
+                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                        0000000000000000000000001,
+                        10_000_000_000_000.into(),
+                    );
+                     // NTV for the owner
+                    ext_nft::mint(
+                        sale.clone().owner_id,
+                        tokens_to_mint.to_string(),
+                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                        0000000000000000000000001,
+                        10_000_000_000_000.into(),
+                    );
+
+        env::log_str(
+            &json!({
+            "type": "offer",
+            "params": {
+                "old_owner_id": sale.clone().owner_id,
+                "new_owner_id": buyer_id,
+                "nft_contract_id": contract_id,
+                "token_id": token_id,
+                "price": price.to_string(),
+              
+            }
+        })
+                .to_string(),
         );
     }
 
@@ -266,7 +346,7 @@ impl Contract {
 
        }
  
-   /* pub fn add_bid(&self,nft_contract_id: AccountId,token_id: AccountId) {
+     /* pub fn add_bid(&self,nft_contract_id: AccountId,token_id: AccountId) {
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         let mut actual_sale_info = self.sales.get(&contract_and_token_id.clone()).expect("Nativo: the token id does not exist");
                  //if dont exist throws a expect err
@@ -334,6 +414,9 @@ impl Contract {
             .get(&contract_and_token_id)
             .expect("The token does not exist");
 
+            Some(market_data.clone()).expect("The token does not exist or isnt listed");
+
+         
         let bidder_id = env::predecessor_account_id();
         let bid_amount = env::attached_deposit();
         let price_u128=  u128::try_from(market_data.price).unwrap();
@@ -358,7 +441,7 @@ impl Contract {
 
             //assert that the bid is less than the sale price
             assert!(
-                bid_amount <= market_data.price.0,
+                bid_amount < market_data.price.0,
                 "You must to pay less than the sale price: {:?}",
                 market_data.price.0
             );
@@ -393,9 +476,24 @@ impl Contract {
     
             }
 
-            bids.push(new_bid);
+            bids.push(new_bid.clone());
             market_data.bids = Some(bids);
-            self.sales.insert(&contract_and_token_id, &market_data);
+            self.sales.insert(&contract_and_token_id, &market_data.clone());
+
+            env::log_str(
+                &json!({
+                "type": "add_bid",
+                "params": {
+                    "owner_id": market_data.owner_id,
+                    "nft_contract_id": nft_contract_id,
+                    "token_id": token_id,
+                    "bidder_id": new_bid.bidder_id ,
+                    "bid_amount":new_bid.price
+                  
+                }
+            })
+                    .to_string(),
+            );
     
         }//else the token as auction the bid must to be more than  start price
         else{
@@ -437,9 +535,23 @@ impl Contract {
     
             }
 
-            bids.push(new_bid);
+            bids.push(new_bid.clone());
             market_data.bids = Some(bids);
             self.sales.insert(&contract_and_token_id, &market_data);
+            env::log_str(
+                &json!({
+                "type": "add_bid",
+                "params": {
+                    "owner_id": market_data.owner_id,
+                    "nft_contract_id": nft_contract_id,
+                    "token_id": token_id,
+                    "bidder_id": new_bid.bidder_id ,
+                    "bid_amount":new_bid.price
+                  
+                }
+            })
+                    .to_string(),
+            );
     
         }
         
@@ -451,22 +563,25 @@ impl Contract {
        
         
     }
-
     #[payable]
     pub fn process_bid(&mut self, nft_contract_id: AccountId, token_id: TokenId,response:bool) {
         assert_one_yocto();
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         //get the actual nft information
         let mut market_data = self.sales.get(&contract_and_token_id).expect("The token does not exist");
-        
+     
+
+        /*  Some(market_data.clone()).expect("The token does not exist or isnt listed"); */
+
         let caller = env::signer_account_id();
+        let old_owner=market_data.clone().owner_id;
         // get the bid vec void or not
         let mut bids = market_data.clone().bids.unwrap_or(Vec::new());
         // keep the bid vec 
         let current_bid = &bids[bids.len() - 1];
 
         //if the signer is the owner he can accept or decline
-        if caller == market_data.owner_id {
+        if caller == market_data.clone().owner_id {
             // accept
             env::log_str("it's the owner");
             if response==true {
@@ -477,11 +592,26 @@ impl Contract {
                   //and process the purchase
                       self.process_purchase(
                         AccountId::new_unchecked(market_data.clone().nft_contract_id),
-                            token_id,
+                            token_id.clone(),
                             selected_bid.price.clone().0.into(),
                             selected_bid.bidder_id.clone(),
                         );  
             
+                        
+                        env::log_str(
+                            &json!({
+                            "type": "process_bid",
+                            "params": {
+                                "old_owner_id": old_owner,
+                                "new_owner_id": caller,
+                                "nft_contract_id": nft_contract_id,
+                                "token_id": token_id,
+                                "price": selected_bid.price.clone().0.to_string(),
+                              
+                            }
+                        })
+                                .to_string(),
+                        );
             }//decline
             else {
                 env::log_str("decline the offer");
@@ -505,7 +635,17 @@ impl Contract {
             let current_bid = &bids[bids.len() - 1];
             if caller == current_bid.bidder_id{
                 env::log_str("decline the offer");
-                //decline
+
+                //accept
+                if response==true {
+                    assert!(
+                        response==true,
+                        "You can not accept the offer"
+                    );
+                      
+                }//decline
+                else{
+                   
                     //remove from the sales 
                          
                         market_data.bids = Some(Vec::new());
@@ -513,7 +653,9 @@ impl Contract {
 
                     //refound the bid to the bidder
                         Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
-
+ 
+                }
+                
             }else{
                  
                 assert!(
@@ -533,12 +675,186 @@ impl Contract {
                
           }
         }
+
+       
+    }
+
+    //Offer out of market offers
+    #[payable]
+    pub fn add_offer_out_market8(
+        &mut self,
+        nft_contract_id: AccountId,
+        token_id: TokenId, 
+    ) {
+        
+
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+        //1 get the token if is on sale or auction
+        let mut market_data = None;
+        market_data= self.sales.get(&contract_and_token_id);
+        // get the general propuse var
+
+        let buyer_id = env::predecessor_account_id();
+        let price = env::attached_deposit();
+        // check if the token is listed on sales
+         //if not
+        if market_data.is_none() {
+            //isnt no listed at the market
+            env::log_str("is none");
+        }
+        else {
+            env::log_str("isn't none");
+
+        }
+
+
+
+/*
+        let bidder_id = env::predecessor_account_id();
+        let bid_amount = env::attached_deposit();
+        let price_u128=  u128::try_from(market_data.price).unwrap();
+
+        assert!(
+            bidder_id != market_data.owner_id,
+            "{} you can not bid your own nft",
+            bidder_id
+        );
+        market_data.is_auction.expect("the token does not accept a bid");
+        // the new bid info
+        let new_bid = Bid {
+            bidder_id: bidder_id.clone(),
+            price: bid_amount.into(),
+        };
+        // get the bid vec void or not
+        let mut bids = market_data.bids.unwrap_or(Vec::new());
+        //to add a new bid we must to verify if the token was listed as sale or auction
+        //if the token was listed as sale we can add a new bid less o equals to the sale price
+        if market_data.is_auction== Some(false){ //this is a sale
+            env::log_str("was listed as sale");
+
+            //assert that the bid is less than the sale price
+            assert!(
+                bid_amount < market_data.price.0,
+                "You must to pay less than the sale price: {:?}",
+                market_data.price.0
+            );
+
+
+            if !bids.is_empty() {
+                let current_bid = &bids[bids.len() - 1];
+    
+                assert!(
+                    bid_amount > current_bid.price.0,
+                    "You must to pay at more or at least equal to current bid price: {:?}",
+                    current_bid.price
+                );
+    
+                /* assert!(
+                    bid_amount > price_u128,
+                    "you must to pay at least the starting price: {:?}",
+                    U128(price_u128)
+                ); */
+    
+                // refund
+                Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
+    
+                // always keep 1 bid for now
+                bids.remove(bids.len() - 1);
+            } else {
+                assert!(
+                    bid_amount > 1,
+                    "you must to pay at least one yocto: {:?}",
+                    U128(price_u128)
+                );
+    
+            }
+
+            bids.push(new_bid.clone());
+            market_data.bids = Some(bids);
+            self.sales.insert(&contract_and_token_id, &market_data.clone());
+
+            env::log_str(
+                &json!({
+                "type": "add_bid",
+                "params": {
+                    "owner_id": market_data.owner_id,
+                    "nft_contract_id": nft_contract_id,
+                    "token_id": token_id,
+                    "bidder_id": new_bid.bidder_id ,
+                    "bid_amount":new_bid.price
+                  
+                }
+            })
+                    .to_string(),
+            );
+    
+        }//else the token as auction the bid must to be more than  start price
+        else{
+            env::log_str("was listed as auction");
+            //assert that the bid is less than the sale price
+            assert!(
+                bid_amount > market_data.price.0,
+                "You must to pay more than the auction price: {:?}",
+                market_data.price.0
+            );
+
+
+            if !bids.is_empty() {
+                let current_bid = &bids[bids.len() - 1];
+    
+                assert!(
+                    bid_amount > current_bid.price.0,
+                    "You must to pay at more or at least equal to current bid price: {:?}",
+                    current_bid.price
+                );
+    
+                /* assert!(
+                    bid_amount > price_u128,
+                    "you must to pay at least the starting price: {:?}",
+                    U128(price_u128)
+                ); */
+    
+                // refund
+                Promise::new(current_bid.bidder_id.clone()).transfer(current_bid.price.0);
+    
+                // always keep 1 bid for now
+                bids.remove(bids.len() - 1);
+            } else {
+                assert!(
+                    bid_amount > market_data.price.0,
+                    "2_You must to pay more than the auction price: {:?}",
+                    market_data.price.0
+                );
+    
+            }
+
+            bids.push(new_bid.clone());
+            market_data.bids = Some(bids);
+            self.sales.insert(&contract_and_token_id, &market_data);
+            env::log_str(
+                &json!({
+                "type": "add_bid",
+                "params": {
+                    "owner_id": market_data.owner_id,
+                    "nft_contract_id": nft_contract_id,
+                    "token_id": token_id,
+                    "bidder_id": new_bid.bidder_id ,
+                    "bid_amount":new_bid.price
+                  
+                }
+            })
+                    .to_string(),
+            );
+    
+        }
+        
+
         
 
        
+*/
        
-
-       
+        
     }
 }
 
