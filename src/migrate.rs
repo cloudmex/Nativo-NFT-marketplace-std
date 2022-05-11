@@ -63,9 +63,31 @@ impl Contract {
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
             offers: LookupMap::new(StorageKey::OffersOutMarket),
+            is_mining_ntv_enabled:true,
 
         }
     }
 
+
+   
+    #[init(ignore_state)]
+    pub fn cleanup() -> Self {
+        
+        env::log_str("clean up state");
+        Self {
+            //set the owner_id field equal to the passed in owner_id. 
+            owner_id:env::signer_account_id(),
+            treasure_id:env::signer_account_id(),
+            //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
+            sales: UnorderedMap::new(StorageKey::Sales),
+            by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
+            fee_percent:0.03,
+            whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
+            offers: LookupMap::new(StorageKey::OffersOutMarket),
+            is_mining_ntv_enabled:true,
+        }
+    }
 
 }

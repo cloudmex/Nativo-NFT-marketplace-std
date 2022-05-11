@@ -83,6 +83,7 @@ pub struct Contract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: LookupMap<ContractAndTokenId, Offers>,
+    pub is_mining_ntv_enabled: bool,
 
 }
 
@@ -98,6 +99,7 @@ pub struct OldContract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: LookupMap<ContractAndTokenId, Offers>,
+    pub is_mining_ntv_enabled: bool,
 
 }
 
@@ -145,7 +147,7 @@ impl Contract {
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: LookupMap::new(StorageKey::OffersOutMarket),
-
+            is_mining_ntv_enabled:true,
         };
 
         //return the Contract object
@@ -257,8 +259,14 @@ impl Contract {
         U128(self.storage_deposits.get(&account_id).unwrap_or(0))
     }
 
+    pub fn stop_play_ntv_minting(&mut self) -> String {
+          self.is_the_owner();
+         self.is_mining_ntv_enabled= !self.is_mining_ntv_enabled;
+         self.is_mining_ntv_enabled.to_string()
+    }
+
     //method to test the remote upgrade
-    pub fn halo(&self) -> String {
-        "Holaa remote".to_string()
+    pub fn halo2(&self) -> String {
+        "Holaa remote ".to_string()
     }
 }

@@ -61,11 +61,11 @@ impl Contract {
             //get the deposit and compare with the sales price 
               //assert the deposit is lower than the sales price
                 //add offer
-                assert!(
-                    bid_amount.clone()< u128::from(market_data.as_ref().unwrap().price),
-                    "The new bid must be lower than the current sale price: {:?}",
-                    u128::from(market_data.clone().as_ref().unwrap().price)
-                );
+                // assert!(
+                //     bid_amount.clone()< u128::from(market_data.as_ref().unwrap().price),
+                //     "The new bid must be lower than the current sale price: {:?}",
+                //     u128::from(market_data.clone().as_ref().unwrap().price)
+                // );
                  //add a offer 
             env::log_str("add new  makert offer");
 
@@ -229,9 +229,30 @@ impl Contract {
         nft_contract_id: AccountId,
         token_id:TokenId,
     ) -> Offers {
-       
-        self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)).expect("there is not an offer for this token")
+
+        let emprs = Offers {
+            token_id: "null".to_string(),
+            nft_contract_id: "null".to_string(),
+            owner_id: "null".to_string().try_into().unwrap(),
+            buyer_id: "null".to_string().try_into().unwrap(),
+            approval_id: 0 as u64,
+            price: 0.into(),
+            ft_token_id:Some("null".parse::<AccountId>().unwrap()),
+        
+        };
+      let mut res =None;
+        res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
+
+        if res.is_none() {
+            env::log_str("there is not an offer for this token");
+            emprs
+        }
+        else{
+            res.unwrap()
+        } 
+
      }
+
     #[payable]
     pub fn delete_offer(
         &mut self,
@@ -273,9 +294,10 @@ impl Contract {
             .to_string(),
         );
     }
+   
     #[payable]
     pub fn accept_offer(&mut self, nft_contract_id: AccountId, token_id: TokenId) {
-        assert_one_yocto();
+         
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         //get the actual offer nft information
         let mut market_data = self.offers.get(&contract_and_token_id).expect("The token does not exist");
@@ -320,25 +342,32 @@ impl Contract {
                                 .to_string(),
                         );
           
-            //pay the NTV 
-            let tokens_to_mint = u128::from(market_data.clone().price) * 3 ;
-                    // NTV for the buyer
-                    ext_nft::mint(
-                        market_data.clone().buyer_id,
-                        tokens_to_mint.to_string(),
-                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
-                        0000000000000000000000001,
-                        10_000_000_000_000.into(),
-                    );
-                     // NTV for the owner
-                    ext_nft::mint(
-                        market_data.clone().owner_id,
-                        tokens_to_mint.to_string(),
-                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
-                        0000000000000000000000001,
-                        10_000_000_000_000.into(),
-                    );
-           
+                        if self.is_mining_ntv_enabled {
+
+                               //pay the NTV 
+                                    let tokens_to_mint = u128::from(market_data.clone().price) * 3 ;
+                                    // NTV for the buyer
+                                    ext_nft::mint(
+                                        market_data.clone().buyer_id,
+                                        tokens_to_mint.to_string(),
+                                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                                        0000000000000000000000001,
+                                        10_000_000_000_000.into(),
+                                    );
+                                    // NTV for the owner
+                                    ext_nft::mint(
+                                        market_data.clone().owner_id,
+                                        tokens_to_mint.to_string(),
+                                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                                        0000000000000000000000001,
+                                        10_000_000_000_000.into(),
+                                    );
+   
+                                    env::log_str("the nvt token minting was payed");    
+                        }else{
+                            env::log_str("the nvt token minting is disabled");      
+                          }
+         
            
    
         }

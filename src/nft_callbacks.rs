@@ -115,10 +115,12 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
  
         //create the unique sale ID which is the contract + DELIMITER + token ID
         let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+
          //list a token as sale
         if market_type == "on_sale" {
          //insert the key value pair into the sales map. Key is the unique ID. value is the sale object
-        let newda = &Sale {
+          let newda = &Sale {
             owner_id: owner_id.clone(), //owner of the sale / token
             approval_id:approval_id, //approval ID for that token that was given to the market
             nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
@@ -132,20 +134,14 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
             media:media,
             creator_id:creator_id,
             bids:None //the sale conditions 
-          };
+            };
             self.sales.insert(
             &contract_and_token_id,
             &newda.clone(),
             );
-            env::log_str(
-                &json!({
-                "type": "nft_on_approve",
-                "params": newda,
-            })
-                    .to_string(),
-            );
+            
              //get the sales by owner ID for the given owner. If there are none, we create a new empty set
-         let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
+          let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
             UnorderedSet::new(
                 StorageKey::ByOwnerIdInner {
                     //we get a new unique prefix for the collection by hashing the owner
@@ -182,63 +178,65 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
                 .insert(&nft_contract_id, &by_nft_contract_id);
 
 
-        }//set a bid for token in the market 
+        }
+        
+        //set a bid for token in the market 
         else if market_type == "on_auction" {
 
             //1 buscar si ya existe en el market
             // si existe borrar la info para agregarlo como 
             
         //insert the key value pair into the sales map. Key is the unique ID. value is the sale object
-        let newda=&Sale {
-            owner_id: owner_id.clone(), //owner of the sale / token
-            approval_id:approval_id, //approval ID for that token that was given to the market
-            nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
-            token_id: token_id.clone(), //the actual token ID
-            price:price,
-            ft_token_id:None,
-            buyer_id:None,// who bid a token
-            is_auction:Some(true),//what`s the token status in a bid
-            title:title,
-            description:description,
-            media:media,
-            creator_id:creator_id,
-            bids:Some(Vec::new()) //the sale conditions 
-        };
-        self.sales.insert(
-            &contract_and_token_id,
-            &newda.clone(),
-            );
+            let newda=&Sale {
+                owner_id: owner_id.clone(), //owner of the sale / token
+                approval_id:approval_id, //approval ID for that token that was given to the market
+                nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
+                token_id: token_id.clone(), //the actual token ID
+                price:price,
+                ft_token_id:None,
+                buyer_id:None,// who bid a token
+                is_auction:Some(true),//what`s the token status in a bid
+                title:title,
+                description:description,
+                media:media,
+                creator_id:creator_id,
+                bids:Some(Vec::new()) //the sale conditions 
+            };
+            self.sales.insert(
+                &contract_and_token_id,
+                &newda.clone(),
+                );
 
-            env::log_str(
-                &json!({
-                "type": "add_bid",
-                "params": newda,
-            })
-                    .to_string(),
-            );
-            //get the sales by owner ID for the given owner. If there are none, we create a new empty set
-        let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
-            UnorderedSet::new(
-                StorageKey::ByOwnerIdInner {
-                    //we get a new unique prefix for the collection by hashing the owner
-                    account_id_hash: hash_account_id(&owner_id),
-                }
-                .try_to_vec()
-                .unwrap(),
-            )
-        });
-    //insert the unique sale ID into the set
-    by_owner_id.insert(&contract_and_token_id);
-    //insert that set back into the collection for the owner
-    self.by_owner_id.insert(&owner_id, &by_owner_id);
+                env::log_str(
+                    &json!({
+                    "type": "add_bid",
+                    "params": newda,
+                })
+                        .to_string(),
+                );
+                //get the sales by owner ID for the given owner. If there are none, we create a new empty set
+                    let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
+                    UnorderedSet::new(
+                        StorageKey::ByOwnerIdInner {
+                            //we get a new unique prefix for the collection by hashing the owner
+                            account_id_hash: hash_account_id(&owner_id),
+                        }
+                        .try_to_vec()
+                        .unwrap(),
+                    )
+                            });
+                //insert the unique sale ID into the set
+                by_owner_id.insert(&contract_and_token_id);
+                //insert that set back into the collection for the owner
+                self.by_owner_id.insert(&owner_id, &by_owner_id);
 
-    //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
-    let mut by_nft_contract_id = self
-        .by_nft_contract_id
-        .get(&nft_contract_id)
-        .unwrap_or_else(|| {
-            UnorderedSet::new(
-                StorageKey::ByNFTContractIdInner {
+                //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
+                let mut by_nft_contract_id = self
+                    .by_nft_contract_id
+                    .get(&nft_contract_id)
+                    .unwrap_or_else(|| {
+                        UnorderedSet::new(
+                            StorageKey::ByNFTContractIdInner {
                     //we get a new unique prefix for the collection by hashing the owner
                     account_id_hash: hash_account_id(&nft_contract_id),
                 }
@@ -265,8 +263,72 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
             self.update_price(nft_contract_id,token_id,price);
 
         }        
-        else if market_type == "on_offer" {
-            self.offer(nft_contract_id,token_id);
+        else if market_type == "accept_offer" {
+            //list the token as sale 
+
+                //insert the key value pair into the sales map. Key is the unique ID. value is the sale object
+                let newda = &Sale {
+                    owner_id: owner_id.clone(), //owner of the sale / token
+                    approval_id:approval_id, //approval ID for that token that was given to the market
+                    nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
+                    token_id: token_id.clone(), //the actual token ID
+                    price:price,
+                    ft_token_id:None,
+                    buyer_id:None,// who bid a token
+                    is_auction:Some(false),//what`s the token status in a bid
+                    title:title,
+                    description:description,
+                    media:media,
+                    creator_id:creator_id,
+                    bids:None //the sale conditions 
+                    };
+                    self.sales.insert(
+                    &contract_and_token_id,
+                    &newda.clone(),
+                    );
+                    
+                    //get the sales by owner ID for the given owner. If there are none, we create a new empty set
+                let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
+                    UnorderedSet::new(
+                        StorageKey::ByOwnerIdInner {
+                            //we get a new unique prefix for the collection by hashing the owner
+                            account_id_hash: hash_account_id(&owner_id),
+                        }
+                        .try_to_vec()
+                        .unwrap(),
+                    )
+                });
+                    //insert the unique sale ID into the set
+                    by_owner_id.insert(&contract_and_token_id);
+                    //insert that set back into the collection for the owner
+                    self.by_owner_id.insert(&owner_id, &by_owner_id);
+
+                    //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
+                    let mut by_nft_contract_id = self
+                        .by_nft_contract_id
+                        .get(&nft_contract_id)
+                        .unwrap_or_else(|| {
+                            UnorderedSet::new(
+                                StorageKey::ByNFTContractIdInner {
+                                    //we get a new unique prefix for the collection by hashing the owner
+                                    account_id_hash: hash_account_id(&nft_contract_id),
+                                }
+                                .try_to_vec()
+                                .unwrap(),
+                            )
+                        });
+                    
+                    //insert the token ID into the set
+                    by_nft_contract_id.insert(&token_id);
+                    //insert the set back into the collection for the given nft contract ID
+                    self.by_nft_contract_id
+                        .insert(&nft_contract_id, &by_nft_contract_id);
+
+
+            
+            //the the method to accept the offer out of market
+            
+            self.accept_offer(nft_contract_id,token_id);
 
         }
  
