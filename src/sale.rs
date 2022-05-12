@@ -139,6 +139,8 @@ impl Contract {
         //get the attached deposit and make sure it's greater than 0
         let deposit = env::attached_deposit();
         assert!(deposit > 0, "Attached deposit must be greater than 0");
+        //if exist an offer found it Here
+        let mut if_offer= self.get_offer(nft_contract_id.clone(),token_id.clone());
 
         //convert the nft_contract_id from a AccountId to an AccountId
         let contract_id: AccountId = nft_contract_id.clone().into();
@@ -158,6 +160,12 @@ impl Contract {
         //make sure the deposit is greater than the price
         assert!(deposit >= price, "Attached deposit must be greater than or equal to the current price: {:?}", price);
 
+        // if the token have a bid update the owner
+        if if_offer.token_id!="null".to_string() {
+            //set the new owner
+            if_offer.owner_id=buyer_id.clone();
+            //save the new data
+            self.offers.insert(&contract_and_token_id.clone(),&if_offer);        }
         //process the purchase (which will remove the sale, transfer and get the payout from the nft contract, and then distribute royalties) 
         self.process_purchase(
             contract_id.clone(),
@@ -399,6 +407,7 @@ impl Contract {
        }*/
 
         // Auction bids
+    #[private]
     #[payable]
     pub fn add_bid(
         &mut self,
@@ -563,6 +572,7 @@ impl Contract {
        
         
     }
+    #[private]
     #[payable]
     pub fn process_bid(&mut self, nft_contract_id: AccountId, token_id: TokenId,response:bool) {
         assert_one_yocto();
