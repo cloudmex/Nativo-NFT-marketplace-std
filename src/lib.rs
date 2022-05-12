@@ -267,6 +267,6 @@ impl Contract {
 
     //method to test the remote upgrade
     pub fn halo2(&self) -> String {
-        "Holaa remote ".to_string()
+        "Holaa remote now2 ".to_string()
     }
 }
