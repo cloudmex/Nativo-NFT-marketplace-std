@@ -70,8 +70,8 @@ impl Contract {
 
 
    
-    #[init(ignore_state)]
-    pub fn cleanup() -> Self {
+     
+    pub fn cleanup(&mut self)    {
         
         env::log_str("clean up state");
         Self {
@@ -87,7 +87,7 @@ impl Contract {
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: LookupMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:true,
-        }
+        };
     }
 
 }

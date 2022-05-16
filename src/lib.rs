@@ -260,13 +260,13 @@ impl Contract {
     }
 
     pub fn stop_play_ntv_minting(&mut self) -> String {
-          self.is_the_owner();
+         self.is_the_owner();
          self.is_mining_ntv_enabled= !self.is_mining_ntv_enabled;
          self.is_mining_ntv_enabled.to_string()
     }
 
-    //method to test the remote upgrade
-    pub fn halo2(&self) -> String {
+     //method to test the remote upgrade
+    pub fn halodr(&self) -> String {
         "Holaa remote now2 ".to_string()
-    }
+    } 
 }
