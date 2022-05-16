@@ -99,7 +99,8 @@ impl Contract {
     }
 
      //validate if the owner is the caller
-     fn is_the_owner(&self)   {
+     #[private]
+    pub fn is_the_owner(&self)   {
         //validate that only the owner contract add new contract address
         assert_eq!(
             self.owner_id==env::predecessor_account_id(),

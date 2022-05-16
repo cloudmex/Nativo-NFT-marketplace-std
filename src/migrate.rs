@@ -16,7 +16,7 @@ impl Contract {
         //input is code:<Vec<u8> on REGISTER 0
         //log!("bytes.length {}", code.unwrap().len());
         const GAS_FOR_UPGRADE: u64 = 20 * TGAS; //gas occupied by this fn
-        const BLOCKCHAIN_INTERFACE_NOT_SET_ERR: &str = "Blockchain interface not set.";
+       // const BLOCKCHAIN_INTERFACE_NOT_SET_ERR: &str = "Blockchain interface not set.";
         //after upgrade we call *pub fn migrate()* on the NEW CODE
         let current_id = env::current_account_id();
         let migrate_method_name = "migrate".as_bytes().to_vec();
@@ -62,8 +62,32 @@ impl Contract {
             storage_deposits: old_state.storage_deposits,
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
+            offers: LookupMap::new(StorageKey::OffersOutMarket),
+            is_mining_ntv_enabled:true,
+
         }
     }
 
+
+   
+     
+    pub fn cleanup(&mut self)    {
+        
+        env::log_str("clean up state");
+        Self {
+            //set the owner_id field equal to the passed in owner_id. 
+            owner_id:env::signer_account_id(),
+            treasure_id:env::signer_account_id(),
+            //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
+            sales: UnorderedMap::new(StorageKey::Sales),
+            by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
+            fee_percent:0.03,
+            whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
+            offers: LookupMap::new(StorageKey::OffersOutMarket),
+            is_mining_ntv_enabled:true,
+        };
+    }
 
 }

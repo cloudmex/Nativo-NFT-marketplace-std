@@ -4,7 +4,7 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     assert_one_yocto, env, ext_contract, near_bindgen, AccountId, Balance, Gas, PanicOnDefault,
-    Promise, CryptoHash, BorshStorageKey,
+    Promise, CryptoHash, BorshStorageKey,serde_json::json,
 };
 use std::collections::HashMap;
 
@@ -13,7 +13,8 @@ use crate::internal::*;
 use crate::sale::*;
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 pub use crate::migrate::*;
-pub use crate::DAO::*;
+pub use crate::dao::*;
+pub use crate::offers::*;
 
 mod external;
 mod internal;
@@ -21,7 +22,9 @@ mod nft_callbacks;
 mod sale;
 mod sale_views;
 mod migrate;
-mod DAO;
+mod dao;
+mod offers;
+
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
@@ -48,6 +51,16 @@ pub struct Payout {
 } 
 
 
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct OfferOutMarket {
+    pub buyer_id: AccountId,
+    pub nft_contract_id: AccountId,
+    pub token_id: Option<TokenId>,
+    pub ft_token_id: AccountId, // "near" for NEAR token
+    pub price: u128,
+}
+
 //main contract struct to store all the information
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -69,6 +82,8 @@ pub struct Contract {
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
+    pub offers: LookupMap<ContractAndTokenId, Offers>,
+    pub is_mining_ntv_enabled: bool,
 
 }
 
@@ -83,6 +98,9 @@ pub struct OldContract {
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
+    pub offers: LookupMap<ContractAndTokenId, Offers>,
+    pub is_mining_ntv_enabled: bool,
+
 }
 
 //structure for whitelist information
@@ -105,6 +123,7 @@ pub enum StorageKey {
     FTTokenIds,
     StorageDeposits,
     ContractAllowed,
+    OffersOutMarket
 }
 
 #[near_bindgen]
@@ -127,7 +146,8 @@ impl Contract {
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
-
+            offers: LookupMap::new(StorageKey::OffersOutMarket),
+            is_mining_ntv_enabled:true,
         };
 
         //return the Contract object
@@ -239,8 +259,14 @@ impl Contract {
         U128(self.storage_deposits.get(&account_id).unwrap_or(0))
     }
 
-    //method to test the remote upgrade
-    pub fn halo(&self) -> String {
-        "Holaa remote".to_string()
+    pub fn stop_play_ntv_minting(&mut self) -> String {
+         self.is_the_owner();
+         self.is_mining_ntv_enabled= !self.is_mining_ntv_enabled;
+         self.is_mining_ntv_enabled.to_string()
     }
+
+     //method to test the remote upgrade
+    pub fn halodr(&self) -> String {
+        "Holaa remote now2 ".to_string()
+    } 
 }
