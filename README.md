@@ -8,6 +8,8 @@
 `./build.sh`
 ### Set the market contract global
 `export CONTRACT="v2.nativo-market.testnet" `
+
+export CONTRACT="dev-1652818492986-28657230673626"
  ### initialize the market contract
 `near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testnet`
 ### to pay the storage before to list a token
@@ -95,6 +97,12 @@
 # Auctions
 ### list as sales
 
-`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"7","account_id":"dev-1652292755849-85527977565434","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Elmo te esta vigilando\",\"media\":\"bafybeigp4fyo3umq3teaxy7yx5cfv2uj7fsou2ffxkjocgksaheymvmxja\",\"creator_id\":\"alexiaab.testnet\"}"}' --accountId darkdokxo.testnet --deposit 0.1`
+`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"10","account_id":"dev-1652818492986-28657230673626","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Elmo te esta vigilando\",\"media\":\"bafybeigp4fyo3umq3teaxy7yx5cfv2uj7fsou2ffxkjocgksaheymvmxja\",\"creator_id\":\"alexiaab.testnet\"}"}' --accountId darkdokxo.testnet --deposit 0.1`
 
 
+
+
+near call $CONTRACT get_owner '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2"}' --accountId dokxo.testnet
+
+
+near view minterv2.nativo-minter.testnet nft_token '{"token_id":"2"}' --accountId dokxo.testnet

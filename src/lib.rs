@@ -4,7 +4,7 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     assert_one_yocto, env, ext_contract, near_bindgen, AccountId, Balance, Gas, PanicOnDefault,
-    Promise, CryptoHash, BorshStorageKey,serde_json::json,
+    Promise, PromiseResult, CryptoHash, BorshStorageKey,serde_json::json,
 };
 use std::collections::HashMap;
 
@@ -28,7 +28,8 @@ mod offers;
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
-
+const GAS_300: Gas = Gas(300_000_000_000_000);
+const market_account : &str ="v2.nativo-market.testnet";
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
 

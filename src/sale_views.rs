@@ -1,8 +1,61 @@
 use crate::*;
 
+use near_sdk::json_types::Base64VecU8;
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct TokenMetadata {
+    pub title: Option<String>, // ex. "Arch Nemesis: Mail Carrier" or "Parcel #5055"
+    pub description: Option<String>, // free-form description
+    pub media: Option<String>, // URL to associated media, preferably to decentralized, content-addressed storage
+    pub media_hash: Option<Base64VecU8>, // Base64-encoded sha256 hash of content referenced by the `media` field. Required if `media` is included.
+    pub copies: Option<u64>, // number of copies of this set of metadata in existence when token was minted.
+    pub issued_at: Option<u64>, // When token was issued or minted, Unix epoch in milliseconds
+    pub expires_at: Option<u64>, // When token expires, Unix epoch in milliseconds
+    pub starts_at: Option<u64>, // When token starts being valid, Unix epoch in milliseconds
+    pub updated_at: Option<u64>, // When token was last updated, Unix epoch in milliseconds
+    pub extra: Option<String>, // anything extra the NFT wants to store on-chain. Can be stringified JSON.
+    pub reference: Option<String>, // URL to an off-chain JSON file with more info.
+    pub reference_hash: Option<Base64VecU8>, // Base64-encoded sha256 hash of JSON from reference field. Required if `reference` is included.
+}
+
+#[derive(Serialize, Deserialize,Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct JsonToken {
+    //token ID
+    pub token_id: TokenId,
+    //owner of the token
+    pub owner_id: AccountId,
+    //token metadata
+    pub metadata: TokenMetadata,
+    //creator of the token
+    pub creator_id: AccountId,
+    //list of approved account IDs that have access to transfer the token. This maps an account ID to an approval ID
+    pub approved_account_ids: HashMap<AccountId, u64>,
+    //keep track of the royalty percentages for the token in a hash map
+    pub royalty: HashMap<AccountId, u32>,
+}
+
+#[ext_contract(ext_nft)]
+trait NonFungibleTokenApprovalsReceiver {
+    fn nft_token(& self,token_id: TokenId);
+    
+}
+#[ext_contract(this_contract)]
+trait Callbacks {
+  fn get_pool_information_callback(&mut self);  
+}
+
+
+#[ext_contract(ext_self)]
+pub trait MyContract {
+    fn get_promise_result(&self,nft_contract_id :String ) -> String;
+    
+}
 #[near_bindgen]
 impl Contract {
     /// views
+    
     
     //returns the number of sales the marketplace has up (as a string)
     pub fn get_supply_sales(
@@ -118,5 +171,121 @@ impl Contract {
         //try and get the sale object for the given unique sale ID. Will return an option since
         //we're not guaranteed that the unique sale ID passed in will be valid.
         self.sales.get(&nft_contract_token)
+    }
+
+    // pub fn get_owner22(&self, nft_contract_id: AccountId ,token_id:TokenId){
+    //     let x =self.get_owner(nft_contract_id,token_id);
+    //     env::log_str("this is the response:");
+    //     env::log_str(x);
+    // }
+
+    //get the owner from the minter and fins any sale o offer in the market to update
+    //this will fix the error after exteral tranfer
+    pub fn update_owner_from_minter(&self, nft_contract_id: AccountId ,token_id:TokenId)-> Promise{
+        let token_info:JsonToken;
+       
+     let p= ext_nft::nft_token(
+            token_id.clone(),
+            nft_contract_id.clone(), //contract account we're calling
+            NO_DEPOSIT, //NEAR deposit we attach to the call
+            Gas(100_000_000_000_000), //GAS we're attaching
+        ) 
+        .then(ext_self::get_promise_result(
+            format!("{}{}{}", nft_contract_id, DELIMETER, token_id),
+            market_account.parse::<AccountId>().unwrap(), // el mismo contrato local
+            NO_DEPOSIT,                                             // yocto NEAR a ajuntar al callback
+            Gas(15_000_000_000_000),                            // gas a ajuntar al callback
+        ));
+       
+        p
+     
+    }
+
+
+    #[private]
+    pub fn get_pool_information_callback(&mut self) -> bool {
+        env::log_str("into callback");
+      if env::promise_results_count() != 1 {
+        env::log_str("Expected a result on the callback");
+        return false;
+      }
+
+      // Get response, return false if failed
+      let pool_info: JsonToken = match env::promise_result(0) {
+          PromiseResult::Successful(value) => near_sdk::serde_json::from_slice::<JsonToken>(&value).unwrap(),
+          _ => { env::log_str("Getting info from Pool Party failed"); return false; },
+      };
+
+     
+      return true
+    }
+
+
+
+     // Método de procesamiento para promesa
+     pub fn get_promise_result(&mut self ,nft_contract_id :String) {
+         
+        assert_eq!(
+            env::promise_results_count(),
+            1,
+            "Éste es un método callback"
+        );
+        match env::promise_result(0) {
+            PromiseResult::NotReady => unreachable!(),
+            PromiseResult::Failed => {
+                env::log_str( &"falló el contracto externo".to_string());
+                
+            }
+            PromiseResult::Successful(result) => {
+                let value = std::str::from_utf8(&result).unwrap();
+                env::log_str("regreso al market");
+                env::log_str(value);
+                let tg: JsonToken = near_sdk::serde_json::from_str(&value).unwrap();
+              
+               // let tg: JsonToken = near_sdk::serde_json::from_str(&newstring).unwrap();  
+                
+                 tg.owner_id.to_string();
+                 
+                 let mut sale = None;
+                 let mut offer=None;
+                 sale= self.sales.get(&nft_contract_id);
+                 offer =self.offers.get(&nft_contract_id);
+                 if !sale.clone().is_none() {
+                    env::log_str( &"on_sale".to_string());
+                    //Copy the sale infoº
+                    let mut lastsale=sale.unwrap();
+                    //Update the owner sale with the actual minter owner
+                    lastsale.owner_id=tg.clone().owner_id;
+                    //Save the changes 
+                   self.sales.insert(&nft_contract_id,&lastsale);
+                 }
+                
+                if !offer.is_none() {
+                        env::log_str( &"on_offer".to_string());
+                        //if the minter owner is the same as the offer
+                        if offer.clone().unwrap().buyer_id ==tg.clone().owner_id{
+                            env::log_str( &"you are the token owner with a bid,so we refound you the bid".to_string());
+                            //refound your bid to the owner and delete the offers
+                            //refund
+                            Promise::new(offer.clone().unwrap().buyer_id).transfer(offer.clone().unwrap().price.0);
+                            //remove the bid
+                            self.offers.remove(&nft_contract_id);
+                        }else{
+                            //Copy the offer info
+                            let mut lastoffer=offer.unwrap();
+                            //Update the owner sale with the actual minter owner
+                            lastoffer.owner_id=tg.clone().owner_id;
+                            //Save the changes 
+                            self.offers.insert(&nft_contract_id,&lastoffer);
+                        }
+                }
+                 else{
+                    env::log_str(  &"no sale/offer found".to_string());
+                 }
+                
+                // let offer =self.offers.get(&nft_contract_id).expect("no offer found");
+                // offer.owner_id.to_string()
+            }
+        }
     }
 }

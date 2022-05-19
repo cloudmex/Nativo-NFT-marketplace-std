@@ -139,6 +139,10 @@ impl Contract {
         //get the attached deposit and make sure it's greater than 0
         let deposit = env::attached_deposit();
         assert!(deposit > 0, "Attached deposit must be greater than 0");
+        
+        //this is a new method that will recover the owner in the minter and update the sales and offers before anything transaction
+        self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
+
         //if exist an offer found it Here
         let mut if_offer= self.get_offer(nft_contract_id.clone(),token_id.clone());
 

@@ -261,7 +261,8 @@ impl Contract {
         
     ) {
         assert_one_yocto();
-
+        //this is a new method that will recover the owner in the minter and update the sales and offers before anything transaction
+        self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
    
 
         let caller = env::signer_account_id();
@@ -298,6 +299,8 @@ impl Contract {
     #[payable]
     pub fn accept_offer(&mut self, nft_contract_id: AccountId, token_id: TokenId) {
          
+        //this is a new method that will recover the owner in the minter and update the sales and offers before anything transaction
+        self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         //get the actual offer nft information
         let mut market_data = self.offers.get(&contract_and_token_id).expect("The token does not exist");
