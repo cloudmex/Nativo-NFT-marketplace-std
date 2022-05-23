@@ -243,7 +243,7 @@ impl Contract {
                 //     //Save the changes 
                 //    self.sales.insert(&nft_contract_id,&lastsale);
 
-                   self.sale.remove(&nft_contract_id);
+                   self.sales.remove(&nft_contract_id);
                  }
                 
                 if !offer.is_none() {
@@ -263,7 +263,7 @@ impl Contract {
                             lastoffer.owner_id=tg.clone().owner_id;
                             //Save the changes 
                             self.offers.insert(&nft_contract_id,&lastoffer);
-                            self.offers.remove(&nft_contract_id)
+                           
                         }
                 }
                  else{
