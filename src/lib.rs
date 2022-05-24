@@ -266,6 +266,10 @@ impl Contract {
          self.is_mining_ntv_enabled.to_string()
     }
 
+    pub fn ntv_is_minting(& self) -> String {
+       return  self.is_mining_ntv_enabled.to_string();
+   }
+
      //method to test the remote upgrade
     pub fn halodr(&self) -> String {
         "Holaa remote now2 ".to_string()

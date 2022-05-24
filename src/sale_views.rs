@@ -202,23 +202,7 @@ impl Contract {
     }
 
 
-    #[private]
-    pub fn get_pool_information_callback(&mut self) -> bool {
-        env::log_str("into callback");
-      if env::promise_results_count() != 1 {
-        env::log_str("Expected a result on the callback");
-        return false;
-      }
-
-      // Get response, return false if failed
-      let pool_info: JsonToken = match env::promise_result(0) {
-          PromiseResult::Successful(value) => near_sdk::serde_json::from_slice::<JsonToken>(&value).unwrap(),
-          _ => { env::log_str("Getting info from Pool Party failed"); return false; },
-      };
-
-     
-      return true
-    }
+   
 
 
 
@@ -252,12 +236,14 @@ impl Contract {
                  offer =self.offers.get(&nft_contract_id);
                  if !sale.clone().is_none() {
                     env::log_str( &"on_sale".to_string());
-                    //Copy the sale infoº
-                    let mut lastsale=sale.unwrap();
-                    //Update the owner sale with the actual minter owner
-                    lastsale.owner_id=tg.clone().owner_id;
-                    //Save the changes 
-                   self.sales.insert(&nft_contract_id,&lastsale);
+                //     //Copy the sale infoº
+                //     let mut lastsale=sale.unwrap();
+                //     //Update the owner sale with the actual minter owner
+                //     lastsale.owner_id=tg.clone().owner_id;
+                //     //Save the changes 
+                //    self.sales.insert(&nft_contract_id,&lastsale);
+
+                   self.sales.remove(&nft_contract_id);
                  }
                 
                 if !offer.is_none() {
@@ -277,6 +263,7 @@ impl Contract {
                             lastoffer.owner_id=tg.clone().owner_id;
                             //Save the changes 
                             self.offers.insert(&nft_contract_id,&lastoffer);
+                           
                         }
                 }
                  else{

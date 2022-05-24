@@ -76,10 +76,10 @@ export CONTRACT="dev-1652818492986-28657230673626"
 
 
 ### 1 this offer can be done without need to be listed in sales
-`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"7","owner_id":"dokxo.testnet"}' --accountId darkdokxo.testnet  --deposit 0.001 ` 
+`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"10","owner_id":"darkdokxo.testnet"}' --accountId dokxo.testnet  --deposit 0.001 ` 
 
 ### 2 this commad returns the offer for a token if exists
-`near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"7"}' --accountId dokxo.testnet`
+`near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"10"}' --accountId dokxo.testnet`
 
 ### 3.1 this commad can be called by the owner or the bidder,it returns the amount payed to the bidder and remove the offer
 `near call $CONTRACT delete_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet  --depositYocto 1 `
@@ -106,3 +106,6 @@ near call $CONTRACT get_owner '{"nft_contract_id":"minterv2.nativo-minter.testne
 
 
 near view minterv2.nativo-minter.testnet nft_token '{"token_id":"2"}' --accountId dokxo.testnet
+
+
+near call $CONTRACT update_owner_from_minter '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"9"}' --accountId dokxo.testnet --gas=300000000000000
