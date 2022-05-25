@@ -270,6 +270,36 @@ impl Contract {
        return  self.is_mining_ntv_enabled.to_string();
    }
 
+
+    // create a new creator perfil to
+
+    pub fn add_new_profile(& self,
+        username:AccountId,
+        media:String,
+        biography:String,
+        socialMedia:String,
+        _type:String,
+       ){
+        assert!(
+            username.clone() == env::signer_account_id(),
+            "the caller must be the same as the username sended"
+        );
+           //this method just receive the info and throws a json log that will be readed by the graph
+                env::log_str(
+                    &json!({
+                    "type": _type,
+                    "params": {
+                        "username": username,
+                        "media": media,
+                        "biography": biography,
+                        "socialMedia": socialMedia,
+                    
+                    }
+                })
+                        .to_string(),
+                );
+    
+       }
      //method to test the remote upgrade
     pub fn halodr(&self) -> String {
         "Holaa remote now2 ".to_string()
