@@ -77,8 +77,13 @@ pub struct Contract {
     pub sales: UnorderedMap<ContractAndTokenId, Sale>,
     //keep track of all the Sale IDs for every account ID
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+
     //keep track of all the token IDs for sale for a given contract
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+
     //keep track of the storage that accounts have payed
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
@@ -95,7 +100,12 @@ pub struct OldContract {
     pub treasure_id: AccountId,
     pub sales: UnorderedMap<ContractAndTokenId, Sale>,
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
@@ -143,7 +153,12 @@ impl Contract {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
+
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
