@@ -15,7 +15,7 @@ use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 pub use crate::migrate::*;
 pub use crate::dao::*;
 pub use crate::offers::*;
-
+pub use crate::offer_views::*;
 mod external;
 mod internal;
 mod nft_callbacks;
@@ -24,6 +24,8 @@ mod sale_views;
 mod migrate;
 mod dao;
 mod offers;
+mod offer_views;
+
 
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
@@ -100,11 +102,11 @@ pub struct OldContract {
     pub treasure_id: AccountId,
     pub sales: UnorderedMap<ContractAndTokenId, Sale>,
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
-    pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
-    pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    // pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    // pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
 
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
-    pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    // pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
 
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
@@ -316,7 +318,7 @@ impl Contract {
     
        }
      //method to test the remote upgrade
-    pub fn halodr(&self) -> String {
+    pub fn rfpoekfnljdhj(&self) -> String {
         "Holaa remote now2 ".to_string()
     } 
 }

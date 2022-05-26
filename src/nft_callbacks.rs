@@ -328,7 +328,7 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
             
             //the the method to accept the offer out of market
             
-            self.accept_offer(nft_contract_id,token_id);
+            self.accept_offer(nft_contract_id,token_id,owner_id.clone());
 
         }
  
