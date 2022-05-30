@@ -110,7 +110,24 @@ impl Contract {
             //take the first "limit" elements in the vector. If we didn't specify a limit, use 0
             .take(limit.unwrap_or(0) as usize) 
             //we'll map the token IDs which are strings into Sale objects
-            .map(|token_id| self.sales.get(&token_id).unwrap())
+            .map(|token_id| self.sales.get(&token_id.clone())
+            .unwrap_or(Sale {
+                token_id: token_id.clone().to_string(),
+                nft_contract_id: "null".to_string(),
+                owner_id: "null".to_string().try_into().unwrap(),
+                buyer_id:Some("null".to_string().try_into().unwrap()),
+                creator_id: None,
+                title: "null".to_string().try_into().unwrap(),
+                description: "null".to_string().try_into().unwrap(),
+                media: "null".to_string().try_into().unwrap(),
+                approval_id: 0 as u64,
+                price: 0.into(),
+                is_auction:Some(false),
+                bids:None,
+                ft_token_id:Some("null".parse::<AccountId>().unwrap()),
+            
+            }))
+          //  .filter(|p| p.creator_id.is_some())
             //since we turned the keys into an iterator, we need to turn it back into a vector to return
             .collect()
     }
@@ -155,19 +172,45 @@ impl Contract {
         let start = u128::from(from_index.unwrap_or(U128(0)));
         
         //iterate through the keys vector
-        keys.iter()
+      keys.iter()
             //skip to the index we specified in the start variable
             .skip(start as usize) 
             //take the first "limit" elements in the vector. If we didn't specify a limit, use 0
             .take(limit.unwrap_or(0) as usize) 
             //we'll map the token IDs which are strings into Sale objects by passing in the unique sale ID (contract + DELIMITER + token ID)
-            .map(|token_id| self.sales.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)).unwrap())
+            .map(|token_id| self.sales.get(&format!("{}{}{}", nft_contract_id.clone(), DELIMETER, token_id.clone()))
+            .unwrap_or(Sale {
+                token_id: token_id.clone(),
+                nft_contract_id: nft_contract_id.clone().into(),
+                owner_id: "null".to_string().try_into().unwrap(),
+                buyer_id:Some("null".to_string().try_into().unwrap()),
+                creator_id: None,
+                title: "null".to_string().try_into().unwrap(),
+                description: "null".to_string().try_into().unwrap(),
+                media: "null".to_string().try_into().unwrap(),
+                approval_id: 0 as u64,
+                price: 0.into(),
+                is_auction:Some(false),
+                bids:None,
+                ft_token_id:Some("null".parse::<AccountId>().unwrap()),
+            
+            }))
+         //   .filter(|p| p.creator_id.is_some())
             //since we turned the keys into an iterator, we need to turn it back into a vector to return
             .collect()
+
+        
     }
 
     //get a sale information for a given unique sale ID (contract + DELIMITER + token ID)
     pub fn get_sale(&self, nft_contract_token: ContractAndTokenId) -> Option<Sale> {
+        //try and get the sale object for the given unique sale ID. Will return an option since
+        //we're not guaranteed that the unique sale ID passed in will be valid.
+        self.sales.get(&nft_contract_token)
+    }
+
+    //get a sale information for a given unique sale ID (contract + DELIMITER + token ID)
+    pub fn get_salear(&self, nft_contract_token: ContractAndTokenId) -> Option<Sale> {
         //try and get the sale object for the given unique sale ID. Will return an option since
         //we're not guaranteed that the unique sale ID passed in will be valid.
         self.sales.get(&nft_contract_token)
@@ -243,7 +286,7 @@ impl Contract {
                 //     //Save the changes 
                 //    self.sales.insert(&nft_contract_id,&lastsale);
 
-                   self.sales.remove(&nft_contract_id);
+                   self.remove_sale(nft_contract_id.clone().try_into().unwrap(),tg.token_id.clone());
                  }
                 
                 if !offer.is_none() {
@@ -255,7 +298,7 @@ impl Contract {
                             //refund
                             Promise::new(offer.clone().unwrap().buyer_id).transfer(offer.clone().unwrap().price.0);
                             //remove the bid
-                            self.offers.remove(&nft_contract_id);
+                            self.remove_sale(nft_contract_id.clone().try_into().unwrap(),tg.token_id.clone());
                         }else{
                             //Copy the offer info
                             let mut lastoffer=offer.unwrap();

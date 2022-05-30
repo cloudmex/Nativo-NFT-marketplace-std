@@ -45,10 +45,10 @@ impl Contract {
         // create the index
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
 
-        // assert!(
-        //     bidder_id.clone()!=owner_id.clone(),
-        //     "You can not add a bid for your token"
-        // );
+        assert!(
+            bidder_id.clone()!=owner_id.clone(),
+            "You can not add a bid for your token"
+        );
         assert!(
             bid_amount.clone()> 0,
             "The bid must be more than 0"
@@ -262,7 +262,7 @@ impl Contract {
     ) {
         assert_one_yocto();
         //this is a new method that will recover the owner in the minter and update the sales and offers before anything transaction
-      //  self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
+        self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
    
 
         let caller = env::signer_account_id();
@@ -271,7 +271,7 @@ impl Contract {
         
 
         assert!(
-              caller.clone() == offer.clone().buyer_id ,
+              caller.clone() != offer.clone().buyer_id ,
              "You are not allowed  "
              );
      
@@ -384,7 +384,9 @@ impl Contract {
      pub fn add_offer_to_state(&mut self,owner_id: AccountId,bidder_id: AccountId,nft_contract_id:AccountId,token_id:TokenId,newoffer:Offers){
 
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
-
+        let mut oldsale = self.sales.get(&contract_and_token_id.clone()).unwrap();
+        oldsale.owner_id =owner_id.clone();
+        self.sales.insert(&contract_and_token_id.clone(),&oldsale);
         self.offers.insert(&contract_and_token_id.clone(),&newoffer);
 
         //get the offers by owner ID for the given owner. If there are none, we create a new empty set

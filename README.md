@@ -76,7 +76,7 @@ export CONTRACT="dev-1652818492986-28657230673626"
 
 
 ### 1 this offer can be done without need to be listed in sales
-`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"10","owner_id":"darkdokxo.testnet"}' --accountId dokxo.testnet  --deposit 0.001 ` 
+`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2","owner_id":"dokxo.testnet"}' --accountId dokxo.testnet  --deposit 0.001 ` 
 
 ### 2 this commad returns the offer for a token if exists
 `near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"10"}' --accountId dokxo.testnet`
@@ -143,7 +143,7 @@ export CONTRACT="dev-1652818492986-28657230673626"
 near call $CONTRACT get_owner '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2"}' --accountId dokxo.testnet
 
 
-near view minterv2.nativo-minter.testnet nft_token '{"token_id":"2"}' --accountId dokxo.testnet
+near view minterv2.nativo-minter.testnet nft_token '{"token_id":"17"}' --accountId dokxo.testnet
 
 
 near call $CONTRACT update_owner_from_minter '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"9"}' --accountId dokxo.testnet --gas=300000000000000
