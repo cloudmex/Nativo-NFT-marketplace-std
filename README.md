@@ -8,6 +8,8 @@
 `./build.sh`
 ### Set the market contract global
 `export CONTRACT="v2.nativo-market.testnet" `
+
+export CONTRACT="dev-1652818492986-28657230673626"
  ### initialize the market contract
 `near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testnet`
 ### to pay the storage before to list a token
@@ -74,10 +76,10 @@
 
 
 ### 1 this offer can be done without need to be listed in sales
-`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"7","owner_id":"dokxo.testnet"}' --accountId darkdokxo.testnet  --deposit 0.001 ` 
+`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2","owner_id":"dokxo.testnet"}' --accountId dokxo.testnet  --deposit 0.001 ` 
 
 ### 2 this commad returns the offer for a token if exists
-`near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"7"}' --accountId dokxo.testnet`
+`near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"10"}' --accountId dokxo.testnet`
 
 ### 3.1 this commad can be called by the owner or the bidder,it returns the amount payed to the bidder and remove the offer
 `near call $CONTRACT delete_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet  --depositYocto 1 `
@@ -88,13 +90,60 @@
 
  
 
-#  4 this command only can be called by the owner to accept the offer,paying the royalites,the nfv and resolving the sale
-### it only can be called after the token is listed to the market(call this function after  nft_on_approve )
-`near call $CONTRACT accept_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet  --depositYocto 1  --gas=300000000000000`
+ # Sales views 
+### get the total suply of Sales
+`near view $CONTRACT get_supply_sales  --accountId dokxo.testnet`
 
-# Auctions
-### list as sales
+### get the total Sales's by owner   
+`near view $CONTRACT get_supply_by_owner_id '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet`
 
-`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"7","account_id":"dev-1652292755849-85527977565434","msg":"{\"market_type\":\"on_sale\",\"price\":\"1000000000000000000000000\",\"title\":\"Elmo te esta vigilando\",\"media\":\"bafybeigp4fyo3umq3teaxy7yx5cfv2uj7fsou2ffxkjocgksaheymvmxja\",\"creator_id\":\"alexiaab.testnet\"}"}' --accountId darkdokxo.testnet --deposit 0.1`
+### get the  Sales by owner
+`near view $CONTRACT get_sales_by_owner_id '{"account_id":"dokxo.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
+
+### get the total  Sales's supply by contract  
+`near view $CONTRACT get_supply_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet"}' --accountId dokxo.testnet`
+
+### get the total  Sales's by contract  
+`near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
 
 
+### get a specify Sales
+
+`near view $CONTRACT get_sale '{"nft_contract_token":"minterv2.nativo-minter.testnet.10"}'  --accountId dokxo.testnet `
+
+
+
+# Offers views 
+### get the total suply of offers
+`near view $CONTRACT get_supply_offers  --accountId dokxo.testnet`
+
+### get the total offers's by owner   
+`near view $CONTRACT get_supply_offers_by_owner_id '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet`
+### get the  offers by bidder
+`near view $CONTRACT get_supply_offers_by_bidder_id '{"account_id":"darkdokxo.testnet"}' --accountId dokxo.testnet`
+
+### get the  offers by owner
+`near view $CONTRACT get_offers_by_owner_id '{"account_id":"darkdokxo.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
+
+### get the  offers by bidder
+`near view $CONTRACT get_offers_by_bidder_id '{"account_id":"joehank.testnet","from_index":"0","limit":18 }' --accountId dokxo.testnet`
+
+`near view $CONTRACT get_offer_bidder '{"bidder_id":"dokxo.testnet"}' --accountId dokxo.testnet`
+
+
+
+### get the total  offers's supply by contract  
+`near view $CONTRACT get_supply_offers_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet"}' --accountId dokxo.testnet`
+
+### get the total  offers's by contract  
+`near view $CONTRACT get_offers_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
+
+
+
+near call $CONTRACT get_owner '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2"}' --accountId dokxo.testnet
+
+
+near view minterv2.nativo-minter.testnet nft_token '{"token_id":"17"}' --accountId dokxo.testnet
+
+
+near call $CONTRACT update_owner_from_minter '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"9"}' --accountId dokxo.testnet --gas=300000000000000

@@ -58,12 +58,17 @@ impl Contract {
             treasure_id: old_state.treasure_id,
             sales: old_state.sales,
             by_owner_id: old_state.by_owner_id,
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
+
             by_nft_contract_id: old_state.by_nft_contract_id,
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+
             storage_deposits: old_state.storage_deposits,
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
-            offers: LookupMap::new(StorageKey::OffersOutMarket),
-            is_mining_ntv_enabled:true,
+            offers: old_state.offers,
+            is_mining_ntv_enabled:old_state.is_mining_ntv_enabled,
 
         }
     }
@@ -81,7 +86,10 @@ impl Contract {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),

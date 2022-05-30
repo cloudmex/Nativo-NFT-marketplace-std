@@ -4,7 +4,7 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     assert_one_yocto, env, ext_contract, near_bindgen, AccountId, Balance, Gas, PanicOnDefault,
-    Promise, CryptoHash, BorshStorageKey,serde_json::json,
+    Promise, PromiseResult, CryptoHash, BorshStorageKey,serde_json::json,
 };
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 pub use crate::migrate::*;
 pub use crate::dao::*;
 pub use crate::offers::*;
-
+pub use crate::offer_views::*;
 mod external;
 mod internal;
 mod nft_callbacks;
@@ -24,11 +24,14 @@ mod sale_views;
 mod migrate;
 mod dao;
 mod offers;
+mod offer_views;
+
 
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
-
+const GAS_300: Gas = Gas(300_000_000_000_000);
+const market_account : &str ="v2.nativo-market.testnet";
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
 
@@ -76,8 +79,13 @@ pub struct Contract {
     pub sales: UnorderedMap<ContractAndTokenId, Sale>,
     //keep track of all the Sale IDs for every account ID
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+
     //keep track of all the token IDs for sale for a given contract
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+
     //keep track of the storage that accounts have payed
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
@@ -94,7 +102,12 @@ pub struct OldContract {
     pub treasure_id: AccountId,
     pub sales: UnorderedMap<ContractAndTokenId, Sale>,
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    // pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    // pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    // pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
@@ -142,7 +155,12 @@ impl Contract {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
+
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
@@ -265,8 +283,42 @@ impl Contract {
          self.is_mining_ntv_enabled.to_string()
     }
 
+    pub fn ntv_is_minting(& self) -> String {
+       return  self.is_mining_ntv_enabled.to_string();
+   }
+
+
+    // create a new creator perfil to
+
+    pub fn add_new_profile(& self,
+        username:AccountId,
+        media:String,
+        biography:String,
+        socialMedia:String,
+        _type:String,
+       ){
+        assert!(
+            username.clone() == env::signer_account_id(),
+            "the caller must be the same as the username sended"
+        );
+           //this method just receive the info and throws a json log that will be readed by the graph
+                env::log_str(
+                    &json!({
+                    "type": _type,
+                    "params": {
+                        "username": username,
+                        "media": media,
+                        "biography": biography,
+                        "socialMedia": socialMedia,
+                    
+                    }
+                })
+                        .to_string(),
+                );
+    
+       }
      //method to test the remote upgrade
-    pub fn halodr(&self) -> String {
+    pub fn rfpoekfnljdhj(&self) -> String {
         "Holaa remote now2 ".to_string()
     } 
 }

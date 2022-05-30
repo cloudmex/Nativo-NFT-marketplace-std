@@ -139,6 +139,10 @@ impl Contract {
         //get the attached deposit and make sure it's greater than 0
         let deposit = env::attached_deposit();
         assert!(deposit > 0, "Attached deposit must be greater than 0");
+        
+        //this is a new method that will recover the owner in the minter and update the sales and offers before anything transaction
+        //self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
+
         //if exist an offer found it Here
         let mut if_offer= self.get_offer(nft_contract_id.clone(),token_id.clone());
 
@@ -165,7 +169,8 @@ impl Contract {
             //set the new owner
             if_offer.owner_id=buyer_id.clone();
             //save the new data
-            self.offers.insert(&contract_and_token_id.clone(),&if_offer);        }
+            self.offers.insert(&contract_and_token_id.clone(),&if_offer);    
+            }
         //process the purchase (which will remove the sale, transfer and get the payout from the nft contract, and then distribute royalties) 
         self.process_purchase(
             contract_id.clone(),
@@ -178,6 +183,7 @@ impl Contract {
         //let stt ="Tokens a minar".to_string() + &(deposit.clone()*1000000000000000000000000).to_string();
         //
       
+        if self.is_mining_ntv_enabled {
 
                     let tokens_to_mint = deposit.clone() * 3;
                     // NTV for the buyer
@@ -197,6 +203,9 @@ impl Contract {
                         10_000_000_000_000.into(),
                     );
 
+                }else{
+                    env::log_str("the nvt token minting is disabled");      
+                  }
         env::log_str(
             &json!({
             "type": "offer",
