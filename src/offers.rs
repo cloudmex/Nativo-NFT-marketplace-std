@@ -384,9 +384,15 @@ impl Contract {
      pub fn add_offer_to_state(&mut self,owner_id: AccountId,bidder_id: AccountId,nft_contract_id:AccountId,token_id:TokenId,newoffer:Offers){
 
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
-        let mut oldsale = self.sales.get(&contract_and_token_id.clone()).unwrap();
-        oldsale.owner_id =owner_id.clone();
-        self.sales.insert(&contract_and_token_id.clone(),&oldsale);
+        let mut oldsale = None;
+        oldsale= self.sales.get(&contract_and_token_id.clone());
+
+        
+        if !oldsale.clone().is_none() {
+            oldsale.clone().unwrap().owner_id =owner_id.clone();
+            self.sales.insert(&contract_and_token_id.clone(),&oldsale.unwrap());
+        }
+      
         self.offers.insert(&contract_and_token_id.clone(),&newoffer);
 
         //get the offers by owner ID for the given owner. If there are none, we create a new empty set
