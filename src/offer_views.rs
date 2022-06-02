@@ -128,7 +128,7 @@ impl Contract {
             //take the first "limit" elements in the vector. If we didn't specify a limit, use 0
             .take(limit.unwrap_or(0) as usize) 
             //we'll map the token IDs which are strings into offer objects
-            .map(|token_id| self.offers.get(&token_id).unwrap_or(Offers {
+            .filter_map(|token_id|  if self.offers.get(&token_id).unwrap_or(Offers {
                 token_id: "null".to_string(),
                 nft_contract_id: "null".to_string(),
                 owner_id: "null".to_string().try_into().unwrap(),
@@ -137,7 +137,12 @@ impl Contract {
                 price: 0.into(),
                 ft_token_id:Some("null".parse::<AccountId>().unwrap()),
             
-            }))
+            }).owner_id== account_id {
+                Some(self.offers.get(&token_id).unwrap())
+            }else{
+                None
+            }
+        )
             //since we turned the keys into an iterator, we need to turn it back into a vector to return
             .collect()
     }
@@ -150,7 +155,7 @@ impl Contract {
         limit: Option<u64>,
     ) -> Vec<Offers> {
         //get the set of token IDs for offer for the given account ID
-        let offers_by_bidder_id = self.offers_by_bidder_id.get(&account_id);
+        let offers_by_bidder_id = self.offers_by_bidder_id.get(&account_id.clone());
         //if there was some set, we set the offer variable equal to that set. If there wasn't, offers is set to an empty vector
         let offers = if let Some(offers_by_bidder_id) = offers_by_bidder_id {
             offers_by_bidder_id
@@ -166,13 +171,13 @@ impl Contract {
 
         
         //iterate through the keys vector
-        keys.iter()
+  keys.iter()
             //skip to the index we specified in the start variable
             .skip(start as usize) 
             //take the first "limit" elements in the vector. If we didn't specify a limit, use 0
             .take(limit.unwrap_or(0) as usize) 
             //we'll map the token IDs which are strings into offer objects
-            .map(|token_id| self.offers.get(&token_id).unwrap_or(Offers {
+            .filter_map(|token_id|  if self.offers.get(&token_id).unwrap_or(Offers {
                 token_id: "null".to_string(),
                 nft_contract_id: "null".to_string(),
                 owner_id: "null".to_string().try_into().unwrap(),
@@ -181,9 +186,18 @@ impl Contract {
                 price: 0.into(),
                 ft_token_id:Some("null".parse::<AccountId>().unwrap()),
             
-            }))
+            }).buyer_id== account_id {
+                Some(self.offers.get(&token_id).unwrap())
+            }else{
+                None
+            }
+        )
             //since we turned the keys into an iterator, we need to turn it back into a vector to return
             .collect()
+
+         
+            
+            //.iter().filter(|offer| offer.buyer_id==account_id).collect()
     }
 
 

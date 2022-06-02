@@ -36,7 +36,7 @@ const market_account : &str ="v2.nativo-market.testnet";
 const NO_DEPOSIT: Balance = 0;
 
 //the minimum storage to have a sale on the contract.
-const STORAGE_PER_SALE: u128 = 1000 * STORAGE_PRICE_PER_BYTE;
+const STORAGE_PER_SALE: u128 = 100 * STORAGE_PRICE_PER_BYTE;
 
 //every sale will have a unique ID which is `CONTRACT + DELIMITER + TOKEN_ID`
 static DELIMETER: &str = ".";
@@ -183,8 +183,12 @@ impl Contract {
             //if we didn't specify an account ID, we simply use the caller of the function
             .unwrap_or_else(env::predecessor_account_id);
 
+            env::log_str(&storage_account_id.clone().to_string());
         //get the deposit value which is how much the user wants to add to their storage
         let deposit = env::attached_deposit();
+        env::log_str("before assert");
+        env::log_str(&deposit.clone().to_string());
+        env::log_str(&STORAGE_PER_SALE.clone().to_string());
 
         //make sure the deposit is greater than or equal to the minimum storage for a sale
         assert!(
@@ -203,17 +207,20 @@ impl Contract {
 
     
     fn internal_storage_deposit(&mut self, account_id: Option<AccountId>) {
-        
+        env::log_str("entro a pagar el internal deposit");
         //get the account ID to pay for storage for
         let storage_account_id = account_id 
             //convert the valid account ID into an account ID
             .map(|a| a.into())
             //if we didn't specify an account ID, we simply use the caller of the function
             .unwrap_or_else(env::predecessor_account_id);
+            env::log_str("storage asccount");
+            env::log_str(&storage_account_id.clone().to_string());
 
         //get the deposit value which is how much the user wants to add to their storage
         let deposit = env::attached_deposit();
-         
+        env::log_str("deposited amount");
+        env::log_str(&deposit.clone().to_string());
         //make sure the deposit is greater than or equal to the minimum storage for a sale
         assert!(
             deposit >= STORAGE_PER_SALE,
