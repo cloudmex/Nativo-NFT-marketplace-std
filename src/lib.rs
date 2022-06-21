@@ -31,7 +31,7 @@ mod offer_views;
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
 const GAS_300: Gas = Gas(300_000_000_000_000);
-const market_account : &str ="v2.nativo-market.testnet";
+const market_account : &str ="v3.nativo-market.testnet";
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
 
@@ -92,6 +92,7 @@ pub struct Contract {
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: LookupMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
+    pub collectionID:u64,
 
 }
 
@@ -102,17 +103,19 @@ pub struct OldContract {
     pub treasure_id: AccountId,
     pub sales: UnorderedMap<ContractAndTokenId, Sale>,
     pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
-    // pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
-    // pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
 
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
-    // pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
 
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: LookupMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
+    pub collectionID:u64,
+
 
 }
 
@@ -129,8 +132,15 @@ pub enum StorageKey {
     Sales,
     ByOwnerId,
     ByOwnerIdInner { account_id_hash: CryptoHash },
+    ByOffersOwnerId,
+    ByOffersOwnerIdInner { account_id_hash: CryptoHash },
+    ByOffersBidderId,
+    ByOffersBidderIdInner { account_id_hash: CryptoHash },
     ByNFTContractId,
     ByNFTContractIdInner { account_id_hash: CryptoHash },
+    ByOffersNFTContractId,
+    ByOffersNFTContractIdInner { account_id_hash: CryptoHash },
+
     ByNFTTokenType,
     ByNFTTokenTypeInner { token_type_hash: CryptoHash },
     FTTokenIds,
@@ -155,17 +165,19 @@ impl Contract {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
-            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
-            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOffersOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOffersBidderId),
 
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
-            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByOffersNFTContractId),
 
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: LookupMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:true,
+            collectionID:0,
+
         };
 
         //return the Contract object
@@ -183,12 +195,8 @@ impl Contract {
             //if we didn't specify an account ID, we simply use the caller of the function
             .unwrap_or_else(env::predecessor_account_id);
 
-            env::log_str(&storage_account_id.clone().to_string());
         //get the deposit value which is how much the user wants to add to their storage
         let deposit = env::attached_deposit();
-        env::log_str("before assert");
-        env::log_str(&deposit.clone().to_string());
-        env::log_str(&STORAGE_PER_SALE.clone().to_string());
 
         //make sure the deposit is greater than or equal to the minimum storage for a sale
         assert!(
@@ -207,20 +215,17 @@ impl Contract {
 
     
     fn internal_storage_deposit(&mut self, account_id: Option<AccountId>) {
-        env::log_str("entro a pagar el internal deposit");
+        
         //get the account ID to pay for storage for
         let storage_account_id = account_id 
             //convert the valid account ID into an account ID
             .map(|a| a.into())
             //if we didn't specify an account ID, we simply use the caller of the function
             .unwrap_or_else(env::predecessor_account_id);
-            env::log_str("storage asccount");
-            env::log_str(&storage_account_id.clone().to_string());
 
         //get the deposit value which is how much the user wants to add to their storage
         let deposit = env::attached_deposit();
-        env::log_str("deposited amount");
-        env::log_str(&deposit.clone().to_string());
+         
         //make sure the deposit is greater than or equal to the minimum storage for a sale
         assert!(
             deposit >= STORAGE_PER_SALE,
@@ -304,10 +309,12 @@ impl Contract {
         socialMedia:String,
         _type:String,
        ){
-        assert!(
-            username.clone() == env::signer_account_id(),
-            "the caller must be the same as the username sended"
-        );
+        assert!(username.clone().to_string() == "","the username is null ");
+        assert!(media.clone().to_string() == "","the media is null ");
+        assert!(biography.clone().to_string() == "","the biography is null ");
+        assert!(socialMedia.clone().to_string() == "","the socialMedia is null ");
+
+        assert!(username.clone() == env::signer_account_id(),"the caller must be the same as the username sended");
            //this method just receive the info and throws a json log that will be readed by the graph
                 env::log_str(
                     &json!({
@@ -324,8 +331,125 @@ impl Contract {
                 );
     
        }
+
+    pub fn add_token_to_collection(& self, 
+        contract_id: AccountId,
+        owner_id: AccountId,
+        token_id: TokenId,
+        price:u128,
+        title:String,
+        description:String,
+        media:String,
+        creator:AccountId,
+        approval_id: u64,
+        collectionID:u64) {
+        
+            assert!(contract_id.clone().to_string() == "","the contract_id is null ");
+            assert!(owner_id.clone().to_string() == "","the owner_id is null ");
+            assert!(token_id.clone().to_string() == "","the token_id is null ");
+            assert!(price.clone().to_string() == "","the price is null ");
+            assert!(title.clone().to_string() == "","the title is null ");
+            assert!(description.clone().to_string() == "","the description is null ");
+            assert!(media.clone().to_string() == "","the media is null ");
+            assert!(creator.clone().to_string() == "","the creator is null ");
+            assert!(approval_id.clone().to_string() == "","the approval_id is null ");
+            assert!(collectionID.clone().to_string() == "","the collectionID is null ");
+
+        assert!(creator.clone() == env::signer_account_id(),"the caller must be the same as the creator sended");
+
+        env::log_str(
+            &json!({
+            "type": "new_collection",
+            "params": {
+                "contract_id": contract_id,
+                "owner_id": owner_id,
+                "token_id":token_id,
+                "price":price,
+                "title":title,
+                "description": description,
+                "media": media,
+                "creator":creator,
+                "approval_id":approval_id,
+                "collectionID":collectionID,
+            }
+        })
+                .to_string(),
+        );
+
+
+
+    }
+    pub fn add_new_user_collection(&mut self,
+        title:String,
+        description:String,
+        mediaIcon:String,
+        mediaBanner:String){
+            let owner_id = env::signer_account_id();
+            let current_collectionID= self.collectionID;
+
+            
+            assert!(title.clone().to_string() == "","the title is null ");
+            assert!(description.clone().to_string() == "","the description is null ");
+            assert!(mediaIcon.clone().to_string() == "","the mediaIcon is null ");
+            assert!(mediaBanner.clone().to_string() == "","the mediaBanner is null ");
+            
+
+            env::log_str(
+                &json!({
+                "type": "new_collection",
+                "params": {                   
+                    "owner_id": owner_id,
+                    "title":title,
+                    "description":description,
+                    "mediaIcon": mediaIcon,
+                    "mediaBanner": mediaBanner,
+                    "collectionID":current_collectionID,
+                }
+            })
+                    .to_string(),
+            );
+
+            self.collectionID+=1;
+        
+    }
+
+
      //method to test the remote upgrade
     pub fn rfpoekfnljdhj(&self) -> String {
         "Holaa remote now2 ".to_string()
     } 
+
+
+      //get the information for a specific token ID
+   pub fn get_offer_id(&self, 
+    nft_contract_id: AccountId,
+    token_id: TokenId,) -> Option< Vec<String>  >{
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+        let offers = self.offers.get(&contract_and_token_id).expect("No offers");
+
+        //if there is some auction ID in the auctions_by_id collection
+        if let offer = self.offers_by_owner_id.get(&offers.owner_id).unwrap() {
+            //we'll return the data for that auction
+            Some(offer.to_vec())
+        } else { //if there wasn't a auction ID in the auctions_by_id collection, we return None
+            None
+        }
+    }
+
+       //get the information for a specific token ID
+   pub fn get_offer_bidder_id(&self, 
+    nft_contract_id: AccountId,
+    token_id: TokenId,) -> Option< Vec<String>  >{
+        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+        let offers = self.offers.get(&contract_and_token_id).expect("No offers");
+
+        //if there is some auction ID in the auctions_by_id collection
+        if let offer = self.offers_by_owner_id.get(&offers.owner_id).unwrap() {
+            //we'll return the data for that auction
+            Some(offer.to_vec())
+        } else { //if there wasn't a auction ID in the auctions_by_id collection, we return None
+            None
+        }
+    }
+
 }
