@@ -83,9 +83,7 @@ impl Contract {
                    u128::from(prev_offer.clone().as_ref().unwrap().price)
                );
                //assert that the bidder isnot the previous one
-               env::log_str(&bidder_id.clone().to_string());
-               env::log_str(&prev_offer.as_ref().unwrap().buyer_id.to_string());
-
+             
                assert!(
                    bidder_id.clone()!=prev_offer.as_ref().unwrap().buyer_id,
                    "You can not add a new bid having one active"
@@ -260,18 +258,18 @@ impl Contract {
         token_id: TokenId,
         
     ) {
-        assert_one_yocto();
+       // assert_one_yocto();
         //this is a new method that will recover the owner in the minter and update the sales and offers before anything transaction
-        self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
+     //   self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
    
 
         let caller = env::signer_account_id();
-        let index = format!("{}{}{}", &nft_contract_id, DELIMETER, &token_id);
+        let index = format!("{}{}{}", &nft_contract_id.clone(), DELIMETER, &token_id.clone());
         let offer= self.offers.get(&index.clone()).expect("there is not an offer for this token");
         
 
         assert!(
-              caller.clone() != offer.clone().buyer_id ,
+              caller.clone() == offer.clone().buyer_id ,
              "You are not allowed  "
              );
      
@@ -280,7 +278,7 @@ impl Contract {
         //refund
         Promise::new(offer.clone().buyer_id).transfer(offer.clone().price.0);
         //erase bid
-        self.offers.remove(&index.clone());
+        self.internal_remove_offer(nft_contract_id.clone(),token_id.clone());
 
         env::log_str(
             &json!({
@@ -320,7 +318,7 @@ impl Contract {
              
                   //remove from the sales 
                      
-                    self.offers.remove(&contract_and_token_id);
+                  self.internal_remove_offer(nft_contract_id.clone(),token_id.clone());
                   //and process the purchase
                       self.process_purchase(
                         AccountId::new_unchecked(market_data.clone().nft_contract_id),
@@ -389,16 +387,78 @@ impl Contract {
 
         
         if !oldsale.clone().is_none() {
-            oldsale.clone().unwrap().owner_id =owner_id.clone();
-            self.sales.insert(&contract_and_token_id.clone(),&oldsale.unwrap());
+            let newsale=Sale {
+                token_id: oldsale.clone().unwrap().token_id,
+                nft_contract_id: nft_contract_id.clone().into(),
+                owner_id: owner_id.clone(),
+                buyer_id:oldsale.clone().unwrap().buyer_id,
+                creator_id: oldsale.clone().unwrap().creator_id,
+                title: oldsale.clone().unwrap().title,
+                description: oldsale.clone().unwrap().description,
+                media: oldsale.clone().unwrap().media,
+                approval_id: oldsale.clone().unwrap().approval_id,
+                price: oldsale.clone().unwrap().price,
+                is_auction:oldsale.clone().unwrap().is_auction,
+                bids:oldsale.clone().unwrap().bids,
+                ft_token_id:oldsale.clone().unwrap().ft_token_id,
+            
+            };
+           
+        
+        
+            self.sales.insert(&contract_and_token_id.clone(),&newsale );
+
+
+
+
+                //get the sales by owner ID for the given owner. If there are none, we create a new empty set
+            let mut by_owner_id = self.by_owner_id.get(&owner_id.clone()).unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::ByOwnerIdInner {
+                    //we get a new unique prefix for the collection by hashing the owner
+                    account_id_hash: hash_account_id(&owner_id.clone()),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+         });
+            //insert the unique sale ID into the set
+            by_owner_id.insert(&contract_and_token_id.clone());
+            //insert that set back into the collection for the owner
+            self.by_owner_id.insert(&owner_id.clone(), &by_owner_id);
+
+            
+           
+            //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
+            let mut by_nft_contract_id = self
+                .by_nft_contract_id
+                .get(&nft_contract_id)
+                .unwrap_or_else(|| {
+                    UnorderedSet::new(
+                        StorageKey::ByNFTContractIdInner {
+                            //we get a new unique prefix for the collection by hashing the owner
+                            account_id_hash: hash_account_id(&nft_contract_id),
+                        }
+                        .try_to_vec()
+                        .unwrap(),
+                    )
+                });
+            
+            //insert the token ID into the set
+            by_nft_contract_id.insert(&token_id);
+            //insert the set back into the collection for the given nft contract ID
+            self.by_nft_contract_id
+                .insert(&nft_contract_id, &by_nft_contract_id);
+/////////////////
         }
       
+        
         self.offers.insert(&contract_and_token_id.clone(),&newoffer);
 
         //get the offers by owner ID for the given owner. If there are none, we create a new empty set
           let mut offers_by_owner_id = self.offers_by_owner_id.get(&owner_id.clone()).unwrap_or_else(|| {
             UnorderedSet::new(
-                StorageKey::ByOwnerIdInner {
+                StorageKey::ByOffersOwnerIdInner {
                     //we get a new unique prefix for the collection by hashing the owner
                     account_id_hash: hash_account_id(&owner_id.clone()),
                 }
@@ -410,7 +470,7 @@ impl Contract {
             //get the offers by bidder ID for the given owner. If there are none, we create a new empty set
             let mut offers_by_bidder_id = self.offers_by_bidder_id.get(&bidder_id.clone()).unwrap_or_else(|| {
                 UnorderedSet::new(
-                    StorageKey::ByOwnerIdInner {
+                    StorageKey::ByOffersBidderIdInner {
                         //we get a new unique prefix for the collection by hashing the owner
                         account_id_hash: hash_account_id(&bidder_id.clone()),
                     }
@@ -439,7 +499,7 @@ impl Contract {
                 .get(&nft_contract_id)
                 .unwrap_or_else(|| {
                     UnorderedSet::new(
-                        StorageKey::ByNFTContractIdInner {
+                        StorageKey::ByOffersNFTContractIdInner {
                             //we get a new unique prefix for the collection by hashing the owner
                             account_id_hash: hash_account_id(&nft_contract_id),
                         }

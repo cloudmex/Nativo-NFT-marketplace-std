@@ -1,15 +1,15 @@
 
 ### create a subaccount
-`near create-account v2.nativo-market.testnet --masterAccount nativo-market.testnet`
+`near create-account v3.nativo-market.testnet --masterAccount nativo-market.testnet`
 ### delete a subaccount
-`near delete v1.nativo-market.testnet nativo-market.testnet`
+`near delete v3.nativo-market.testnet nativo-market.testnet`
 
 ### Compile,build and deploy the market contract 
 `./build.sh`
 ### Set the market contract global
-`export CONTRACT="v2.nativo-market.testnet" `
+`export CONTRACT="v3.nativo-market.testnet" `
 
-export CONTRACT="dev-1652818492986-28657230673626"
+export CONTRACT="dev-1655483694258-68322747074644"
  ### initialize the market contract
 `near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testnet`
 ### to pay the storage before to list a token
@@ -53,7 +53,7 @@ export CONTRACT="dev-1652818492986-28657230673626"
 ### get the storage balance for the account
 `near view $CONTRACT storage_balance_of  '{"account_id":"alexiaab.testnet"}'`
 ### get the total sales for a contract address.
-`near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"hardtest.nativo-minter.testnet","from_index":"0","limit":25}'`
+`near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","from_index":"0","limit":25}'`
 
 ### update the price for a token_id
 `near call $CONTRACT update_price '{"nft_contract_id":"mktstandard.testnet","token_id": "227","price":"10000000000000000000000"}' --account_id joehank.testnet --depositYocto 1`
@@ -76,17 +76,19 @@ export CONTRACT="dev-1652818492986-28657230673626"
 
 
 ### 1 this offer can be done without need to be listed in sales
-`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2","owner_id":"dokxo.testnet"}' --accountId dokxo.testnet  --deposit 0.001 ` 
+`near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"27","owner_id":"v1.nativo-lendings.testnet"}' --accountId dokxo.testnet  --deposit 0.5 ` 
 
 ### 2 this commad returns the offer for a token if exists
-`near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"10"}' --accountId dokxo.testnet`
+`near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"27"}' --accountId dokxo.testnet`
 
 ### 3.1 this commad can be called by the owner or the bidder,it returns the amount payed to the bidder and remove the offer
-`near call $CONTRACT delete_offer '{"nft_contract_id":"hardtest.nativo-minter.testnet","token_id":"2085"}' --accountId dokxo.testnet  --depositYocto 1 `
+`near call $CONTRACT delete_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"27"}' --accountId dokxo.testnet  --depositYocto 1`
 
 ### 3.2 list as sales and accept
 
-`near call hardtest.nativo-minter.testnet nft_approve '{"token_id":"2085","account_id":"dev-1652292755849-85527977565434","msg":"{\"market_type\":\"accept_offer\",\"price\":\"1000000000000000000000\",\"title\":\"a planes img\",\"media\":\"bafybeighiaft7p4kjo34iq3blwv4jpde3jvwu2bmw3dlt7r5cqwdkp37xu\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1 --gas=300000000000000`
+`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"27","account_id":"v3.nativo-market.testnet","msg":"{\"market_type\":\"on_sale\",\"price\":\"700000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId v1.nativo-lendings.testnet --deposit 0.1 --gas=300000000000000`
+
+`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"23","account_id":"v3.nativo-market.testnet","msg":"{\"market_type\":\"accept_offer\",\"price\":\"75000000000000000000000\",\"title\":\"hell flames\",\"media\":\"bafybeibipsha4suh4uadxhlh67wdvlt55nlyk6pttkgyughfsyfhlykbo4\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1 --gas=300000000000000`
 
  
 
@@ -119,14 +121,14 @@ export CONTRACT="dev-1652818492986-28657230673626"
 
 ### get the total offers's by owner   
 `near view $CONTRACT get_supply_offers_by_owner_id '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet`
-### get the  offers by bidder
+### get the total offers's by bidder
 `near view $CONTRACT get_supply_offers_by_bidder_id '{"account_id":"darkdokxo.testnet"}' --accountId dokxo.testnet`
 
 ### get the  offers by owner
 `near view $CONTRACT get_offers_by_owner_id '{"account_id":"darkdokxo.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
 
 ### get the  offers by bidder
-`near view $CONTRACT get_offers_by_bidder_id '{"account_id":"joehank.testnet","from_index":"0","limit":18 }' --accountId dokxo.testnet`
+`near view $CONTRACT get_offers_by_bidder_id '{"account_id":"dokxo.testnet","from_index":"0","limit":18 }' --accountId dokxo.testnet`
 
 `near view $CONTRACT get_offer_bidder '{"bidder_id":"dokxo.testnet"}' --accountId dokxo.testnet`
 
@@ -147,3 +149,12 @@ near view minterv2.nativo-minter.testnet nft_token '{"token_id":"17"}' --account
 
 
 near call $CONTRACT update_owner_from_minter '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"9"}' --accountId dokxo.testnet --gas=300000000000000
+
+
+
+export CONTRACT="main address" 
+
+near call $CONTRACT upgrade --accountId 
+
+
+near call $CONTRACT get_offer_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"2"}' --accountId dokxo.testnet
