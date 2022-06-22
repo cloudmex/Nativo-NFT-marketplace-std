@@ -330,9 +330,9 @@ impl Contract {
                         .to_string(),
                 );
     
-       }
-
-    pub fn add_token_to_collection(& self, 
+    }
+    #[payable]
+    pub fn add_token_to_collection(&mut self, 
         contract_id: AccountId,
         owner_id: AccountId,
         token_id: TokenId,
@@ -343,17 +343,18 @@ impl Contract {
         creator:AccountId,
         approval_id: u64,
         collectionID:u64) {
-        
-            assert!(contract_id.clone().to_string() == "","the contract_id is null ");
-            assert!(owner_id.clone().to_string() == "","the owner_id is null ");
-            assert!(token_id.clone().to_string() == "","the token_id is null ");
-            assert!(price.clone().to_string() == "","the price is null ");
-            assert!(title.clone().to_string() == "","the title is null ");
-            assert!(description.clone().to_string() == "","the description is null ");
-            assert!(media.clone().to_string() == "","the media is null ");
-            assert!(creator.clone().to_string() == "","the creator is null ");
-            assert!(approval_id.clone().to_string() == "","the approval_id is null ");
-            assert!(collectionID.clone().to_string() == "","the collectionID is null ");
+            assert_one_yocto();
+
+            assert!(contract_id.clone().to_string() != "","the contract_id is null ");
+            assert!(owner_id.clone().to_string() != "","the owner_id is null ");
+            assert!(token_id.clone().to_string() != "","the token_id is null ");
+            assert!(price.clone().to_string() != "","the price is null ");
+            assert!(title.clone().to_string() != "","the title is null ");
+            assert!(description.clone().to_string() != "","the description is null ");
+            assert!(media.clone().to_string() != "","the media is null ");
+            assert!(creator.clone().to_string() != "","the creator is null ");
+            assert!(approval_id.clone().to_string() != "","the approval_id is null ");
+            assert!(collectionID.clone().to_string() != "","the collectionID is null ");
 
         assert!(creator.clone() == env::signer_account_id(),"the caller must be the same as the creator sended");
 
@@ -379,19 +380,22 @@ impl Contract {
 
 
     }
+    #[payable]
     pub fn add_new_user_collection(&mut self,
         title:String,
         description:String,
         mediaIcon:String,
         mediaBanner:String){
+            assert_one_yocto();
+
             let owner_id = env::signer_account_id();
             let current_collectionID= self.collectionID;
 
             
-            assert!(title.clone().to_string() == "","the title is null ");
-            assert!(description.clone().to_string() == "","the description is null ");
-            assert!(mediaIcon.clone().to_string() == "","the mediaIcon is null ");
-            assert!(mediaBanner.clone().to_string() == "","the mediaBanner is null ");
+            assert!(title.clone().to_string() != "","the title is null ");
+            assert!(description.clone().to_string() != "","the description is null ");
+            assert!(mediaIcon.clone().to_string()!= "","the mediaIcon is null ");
+            assert!(mediaBanner.clone().to_string() != "","the mediaBanner is null ");
             
 
             env::log_str(
