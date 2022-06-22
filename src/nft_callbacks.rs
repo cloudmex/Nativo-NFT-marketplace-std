@@ -61,8 +61,6 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         msg: String,
     ) {
         self.is_white_listed();
-        env::log_str(&env::attached_deposit().to_string());
-
         self.internal_storage_deposit(Some(owner_id.clone()));
         // get the contract ID which is the predecessor
         let nft_contract_id = env::predecessor_account_id();

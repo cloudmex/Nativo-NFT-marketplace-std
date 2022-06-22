@@ -52,34 +52,31 @@ impl Contract {
     #[init(ignore_state)]
     pub fn migrate() -> Self {
         let old_state: OldContract = env::state_read().expect("failed");
-        
         env::log_str("old state readed");
         Self {
             owner_id: old_state.owner_id,
             treasure_id: old_state.treasure_id,
             sales: old_state.sales,
             by_owner_id: old_state.by_owner_id,
-            offers_by_owner_id: LookupMap::new(StorageKey::ByOffersOwnerId),
-            offers_by_bidder_id: LookupMap::new(StorageKey::ByOffersBidderId),
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
 
             by_nft_contract_id: old_state.by_nft_contract_id,
-            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByOffersNFTContractId),
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
 
             storage_deposits: old_state.storage_deposits,
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
             offers: old_state.offers,
             is_mining_ntv_enabled:old_state.is_mining_ntv_enabled,
-            collectionID:0,
 
         }
     }
 
 
    
-    #[private]
-    #[init(ignore_state)]
-    pub fn cleanup()  -> Self {
+     
+    pub fn cleanup(&mut self)    {
         
         env::log_str("clean up state");
         Self {
@@ -89,18 +86,16 @@ impl Contract {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
-            offers_by_owner_id: LookupMap::new(StorageKey::ByOffersOwnerId),
-            offers_by_bidder_id: LookupMap::new(StorageKey::ByOffersBidderId),
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOwnerId),
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
-            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByOffersNFTContractId),
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
-            fee_percent:0.6,
+            fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: LookupMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:true,
-            collectionID:0,
-
-        }
+        };
     }
 
 }
