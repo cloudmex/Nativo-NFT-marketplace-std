@@ -96,7 +96,7 @@ impl Contract {
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.6,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
-            offers: LookupMap::new(StorageKey::OffersOutMarket),
+            offers: UnorderedMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:true,
             collectionID:0,
 

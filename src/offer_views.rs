@@ -227,7 +227,7 @@ impl Contract {
         limit: Option<u64>,
     ) -> Vec<Offers> {
         //get the set of token IDs for offer for the given contract ID
-        let offers_by_nft_contract_id = self.offers_by_nft_contract_id.get(&nft_contract_id);
+        let offers_by_nft_contract_id = self.offers_by_nft_contract_id.get(&nft_contract_id.clone());
 
         //if there was some set, we set the offers variable equal to that set. If there wasn't, offers is set to an empty vector
         let offers = if let Some(offers_by_nft_contract_id) = offers_by_nft_contract_id {
@@ -249,16 +249,21 @@ impl Contract {
             //take the first "limit" elements in the vector. If we didn't specify a limit, use 0
             .take(limit.unwrap_or(0) as usize) 
             //we'll map the token IDs which are strings into offer objects by passing in the unique offer ID (contract + DELIMITER + token ID)
-            .map(|token_id| self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)).unwrap_or(Offers {
-                token_id: "null".to_string(),
-                nft_contract_id: "null".to_string(),
-                owner_id: "null".to_string().try_into().unwrap(),
-                buyer_id: "null".to_string().try_into().unwrap(),
-                approval_id: 0 as u64,
-                price: 0.into(),
-                ft_token_id:Some("null".parse::<AccountId>().unwrap()),
-            
-            }))
+            .filter_map(|token_id|  if self.offers.get(&token_id).unwrap_or(Offers {
+                    token_id: "null".to_string(),
+                    nft_contract_id: "null".to_string(),
+                    owner_id: "null".to_string().try_into().unwrap(),
+                    buyer_id: "null".to_string().try_into().unwrap(),
+                    approval_id: 0 as u64,
+                    price: 0.into(),
+                    ft_token_id:Some("null".parse::<AccountId>().unwrap()),
+                
+                }).nft_contract_id== nft_contract_id.to_string() {
+                    Some(self.offers.get(&token_id).unwrap())
+                }else{
+                None
+            }
+            )
             //since we turned the keys into an iterator, we need to turn it back into a vector to return
             .collect()
     }

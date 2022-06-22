@@ -90,7 +90,7 @@ pub struct Contract {
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
-    pub offers: LookupMap<ContractAndTokenId, Offers>,
+    pub offers: UnorderedMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
     pub collectionID:u64,
 
@@ -112,7 +112,7 @@ pub struct OldContract {
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
-    pub offers: LookupMap<ContractAndTokenId, Offers>,
+    pub offers: UnorderedMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
     pub collectionID:u64,
 
@@ -174,7 +174,7 @@ impl Contract {
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
-            offers: LookupMap::new(StorageKey::OffersOutMarket),
+            offers: UnorderedMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:true,
             collectionID:0,
 
