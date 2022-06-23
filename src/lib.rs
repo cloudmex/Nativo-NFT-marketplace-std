@@ -30,8 +30,7 @@ mod offer_views;
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
-const GAS_300: Gas = Gas(300_000_000_000_000);
-const market_account : &str ="v3.nativo-market.testnet";
+const MARKET_ACCOUNT : &str ="v3.nativo-market.testnet";
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
 
@@ -92,12 +91,12 @@ pub struct Contract {
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
-    pub collectionID:u64,
+    pub collection_id:u64,
 
 }
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-pub struct OldContract {
+ pub struct OldContract {
     //keep track of the owner of the contract
     pub owner_id: AccountId,
     pub treasure_id: AccountId,
@@ -151,7 +150,9 @@ pub enum StorageKey {
 
 #[near_bindgen]
 impl Contract {
+     #![allow(dead_code, irrefutable_let_patterns)]
     /*
+
         initialization function (can only be called once).
         this initializes the contract with default data and the owner ID
         that's passed in
@@ -176,7 +177,7 @@ impl Contract {
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: UnorderedMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:true,
-            collectionID:0,
+            collection_id:0,
 
         };
 
@@ -306,13 +307,13 @@ impl Contract {
         username:AccountId,
         media:String,
         biography:String,
-        socialMedia:String,
+        social_media:String,
         _type:String,
        ){
         assert!(username.clone().to_string() != "","the username is null ");
         assert!(media.clone().to_string() != "","the media is null ");
         assert!(biography.clone().to_string() != "","the biography is null ");
-        assert!(socialMedia.clone().to_string() != "","the socialMedia is null ");
+        assert!(social_media.clone().to_string() != "","the social_media is null ");
 
         assert!(username.clone() == env::signer_account_id(),"the caller must be the same as the username sended");
            //this method just receive the info and throws a json log that will be readed by the graph
@@ -323,7 +324,7 @@ impl Contract {
                         "username": username,
                         "media": media,
                         "biography": biography,
-                        "socialMedia": socialMedia,
+                        "social_media": social_media,
                     
                     }
                 })
@@ -342,7 +343,7 @@ impl Contract {
            description:String,
            media:String,
            creator:AccountId,
-           collectionID:u64) {
+           collection_id:u64) {
                assert_one_yocto();
    
                assert!(contract_id.clone().to_string() != "","the contract_id is null ");
@@ -353,7 +354,7 @@ impl Contract {
                assert!(description.clone().to_string() != "","the description is null ");
                assert!(media.clone().to_string() != "","the media is null ");
                assert!(creator.clone().to_string() != "","the creator is null ");
-               assert!(collectionID.clone().to_string() != "","the collectionID is null ");
+               assert!(collection_id.clone().to_string() != "","the collection_id is null ");
    
            assert!(creator.clone() == env::signer_account_id(),"the caller must be the same as the creator sended");
    
@@ -370,7 +371,7 @@ impl Contract {
                    "media": media,
                    "creator":creator,
                    "approval_id":"0",
-                   "collectionID":collectionID,
+                   "collection_id":collection_id,
                }
            })
                    .to_string(),
@@ -383,18 +384,18 @@ impl Contract {
        pub fn add_new_user_collection(&mut self,
            title:String,
            description:String,
-           mediaIcon:String,
-           mediaBanner:String){
+           media_icon:String,
+           media_banner:String){
                assert_one_yocto();
    
                let owner_id = env::signer_account_id();
-               let current_collectionID= self.collectionID;
+               let current_collection_id= self.collection_id;
    
                
                assert!(title.clone().to_string() != "","the title is null ");
                assert!(description.clone().to_string() != "","the description is null ");
-               assert!(mediaIcon.clone().to_string()!= "","the mediaIcon is null ");
-               assert!(mediaBanner.clone().to_string() != "","the mediaBanner is null ");
+               assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
+               assert!(media_banner.clone().to_string() != "","the media_banner is null ");
                
    
                env::log_str(
@@ -404,15 +405,15 @@ impl Contract {
                        "owner_id": owner_id,
                        "title":title,
                        "description":description,
-                       "mediaIcon": mediaIcon,
-                       "mediaBanner": mediaBanner,
-                       "collectionID":current_collectionID,
+                       "media_icon": media_icon,
+                       "media_banner": media_banner,
+                       "collection_id":current_collection_id,
                    }
                })
                        .to_string(),
                );
    
-               self.collectionID+=1;
+               self.collection_id+=1;
            
        }
    

@@ -1,7 +1,4 @@
-use crate::*;
-  
- 
- 
+use crate::*; 
 //struct that holds important information about each sale on the market
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -30,7 +27,7 @@ const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
 
 #[near_bindgen]
 impl Contract {
-
+ 
     #[payable]
     pub fn add_offer( 
         &mut self,
@@ -55,6 +52,8 @@ impl Contract {
         );
         //1 ask if is listed on the sale structures.
         let mut market_data = None;
+        env::log_str(&market_data.clone().is_none().to_string());
+
         market_data= self.sales.get(&contract_and_token_id);
         //if yes 
         if !market_data.is_none() {
@@ -72,6 +71,8 @@ impl Contract {
 
             //look if exists a previous offer lower than the actual 
            let mut prev_offer=None;
+           env::log_str(&prev_offer.clone().is_none().to_string());
+
                prev_offer= self.offers.get(&contract_and_token_id.clone());
            //if exist 
            if !prev_offer.is_none() {
@@ -144,6 +145,8 @@ impl Contract {
 
              //look if exists a previous offer lower than the actual 
             let mut prev_offer=None;
+            env::log_str(&prev_offer.clone().is_none().to_string());
+
                 prev_offer= self.offers.get(&contract_and_token_id.clone());
             //if exist 
             if !prev_offer.is_none() {
@@ -239,7 +242,8 @@ impl Contract {
         
         };
       let mut res =None;
-        res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
+      env::log_str(&res.clone().is_none().to_string());
+      res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
 
         if res.is_none() {
             env::log_str("there is not an offer for this token");
@@ -301,7 +305,7 @@ impl Contract {
        // self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         //get the actual offer nft information
-        let mut market_data = self.offers.get(&contract_and_token_id).expect("The token does not exist");
+        let   market_data = self.offers.get(&contract_and_token_id).expect("The token does not exist");
      
         let caller = env::signer_account_id();
         let old_owner=owner_id.clone();
@@ -383,6 +387,8 @@ impl Contract {
 
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         let mut oldsale = None;
+        env::log_str(&oldsale.clone().is_none().to_string());
+
         oldsale= self.sales.get(&contract_and_token_id.clone());
 
         

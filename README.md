@@ -36,12 +36,12 @@ near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testne
 near call $CONTRACT add_new_ext_contract '{"address_contract":"minterv2.nativo-minter.testnet","contract_name":"Nativo minter"}' --accountId dokxo.testnet
 ### Uograde command by owner
 near deploy \
-  --wasmFile res/Nativo_market_std.wasm \
-  --initFunction "cleanup" \
+  --wasmFile res/nativo_market_std.wasm \
+  --initFunction "migrate" \
   --initArgs "{}" \
   --accountId $CONTRACT
 ## Crear una nueva propuesta de actualizacion desde la DAO(testeado)
-`sputnikdao proposal upgrade ./res/Nativo_market_std.wasm $CONTRACT --daoAcc nativo-dao --accountId dokxo.testnet`
+`sputnikdao proposal upgrade ./res/nativo_market_std.wasm $CONTRACT --daoAcc nativo-dao --accountId dokxo.testnet`
 
 ## Crear una nueva propuesta para la actualizacion del dueño del market desde la DAO(testeado)
 `sputnikdao proposal call  $CONTRACT set_owner_account '{"new_account":"nativo-dao.sputnikv2.testnet"}' --daoAcc nativo-dao --accountId nativo-market.testnet`
@@ -167,3 +167,24 @@ near call $CONTRACT get_offer_id '{"nft_contract_id":"minterv2.nativo-minter.tes
 
 
 
+pub struct OldContract {
+    //keep track of the owner of the contract
+    pub owner_id: AccountId,
+    pub treasure_id: AccountId,
+    pub sales: UnorderedMap<ContractAndTokenId, Sale>,
+    pub by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_owner_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+    pub offers_by_bidder_id: LookupMap<AccountId, UnorderedSet<ContractAndTokenId>>,
+
+    pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub offers_by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+
+    pub storage_deposits: LookupMap<AccountId, Balance>,
+    pub fee_percent :f64,
+    pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
+    pub offers: UnorderedMap<ContractAndTokenId, Offers>,
+    pub is_mining_ntv_enabled: bool,
+    pub collection_id:u64,
+
+
+}
