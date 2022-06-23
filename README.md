@@ -7,7 +7,7 @@ near create-account v4.nativo-market.testnet --masterAccount nativo-market.testn
 ### Compile,build and deploy the market contract 
 `./build.sh`
 ### Set the market contract global
-export CONTRACT="v3.nativo-market.testnet" 
+export CONTRACT="v4.nativo-market.testnet" 
 
 export CONTRACT="dev-1655938756139-47681282224188"
  ### initialize the market contract
@@ -81,19 +81,19 @@ near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"minterv2.n
 
 
 ### 1 this offer can be done without need to be listed in sales
-near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"42","owner_id":"dokxo.testnet"}' --accountId dokxo_test.testnet  --deposit 0.4 
+near call $CONTRACT add_offer  '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"42","owner_id":"nativo-market.testnet"}' --accountId dokxo.testnet  --deposit 0.4 
 
 ### 2 this commad returns the offer for a token if exists
 near view $CONTRACT get_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"4"}' --accountId dokxo.testnet
 
 ### 3.1 this commad can be called by the owner or the bidder,it returns the amount payed to the bidder and remove the offer
-near call $CONTRACT delete_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"42"}' --accountId dokxo_test.testnet  --depositYocto 1
+near call $CONTRACT delete_offer '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"42"}' --accountId dokxo.testnet  --depositYocto 1
 
 ### 3.2 list as sales and accept
 
-near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"4","account_id":"dev-1655938756139-47681282224188","msg":"{\"market_type\":\"on_sale\",\"price\":\"7000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId nativo-market.testnet --deposit 0.1 --gas=300000000000000
+near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"4","account_id":"v4.nativo-market.testnet","msg":"{\"market_type\":\"on_sale\",\"price\":\"7000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId nativo-market.testnet --deposit 0.1 --gas=300000000000000
 
-near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"4","account_id":"dev-1655938756139-47681282224188","msg":"{\"market_type\":\"accept_offer\",\"price\":\"75000000000000000000000\",\"title\":\"hell flames\",\"media\":\"bafybeibipsha4suh4uadxhlh67wdvlt55nlyk6pttkgyughfsyfhlykbo4\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1 --gas=300000000000000
+near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"42","account_id":"v4.nativo-market.testnet","msg":"{\"market_type\":\"accept_offer\",\"price\":\"400000000000000000000000\",\"title\":\"hell flames\",\"media\":\"bafybeibipsha4suh4uadxhlh67wdvlt55nlyk6pttkgyughfsyfhlykbo4\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId nativo-market.testnet --deposit 0.1 --gas=300000000000000
 
  
 
@@ -150,7 +150,7 @@ near view $CONTRACT get_offers_by_nft_contract_id '{"nft_contract_id":"minterv2.
 near call $CONTRACT get_owner '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"4"}' --accountId dokxo.testnet
 
 
-near view minterv2.nativo-minter.testnet nft_token '{"token_id":"4"}' --accountId dokxo.testnet
+near view minterv2.nativo-minter.testnet nft_token '{"token_id":"42"}' --accountId dokxo.testnet
 
 
 near call $CONTRACT update_owner_from_minter '{"nft_contract_id":"minterv2.nativo-minter.testnet","token_id":"9"}' --accountId dokxo.testnet --gas=300000000000000
