@@ -342,7 +342,6 @@ impl Contract {
            description:String,
            media:String,
            creator:AccountId,
-           approval_id: u64,
            collectionID:u64) {
                assert_one_yocto();
    
@@ -354,7 +353,6 @@ impl Contract {
                assert!(description.clone().to_string() != "","the description is null ");
                assert!(media.clone().to_string() != "","the media is null ");
                assert!(creator.clone().to_string() != "","the creator is null ");
-               assert!(approval_id.clone().to_string() != "","the approval_id is null ");
                assert!(collectionID.clone().to_string() != "","the collectionID is null ");
    
            assert!(creator.clone() == env::signer_account_id(),"the caller must be the same as the creator sended");
@@ -366,12 +364,12 @@ impl Contract {
                    "contract_id": contract_id,
                    "owner_id": owner_id,
                    "token_id":token_id,
-                   "price":price,
+                   "price": price.to_string(),
                    "title":title,
                    "description": description,
                    "media": media,
                    "creator":creator,
-                   "approval_id":approval_id,
+                   "approval_id":"0",
                    "collectionID":collectionID,
                }
            })
