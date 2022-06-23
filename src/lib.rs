@@ -309,10 +309,10 @@ impl Contract {
         socialMedia:String,
         _type:String,
        ){
-        assert!(username.clone().to_string() == "","the username is null ");
-        assert!(media.clone().to_string() == "","the media is null ");
-        assert!(biography.clone().to_string() == "","the biography is null ");
-        assert!(socialMedia.clone().to_string() == "","the socialMedia is null ");
+        assert!(username.clone().to_string() != "","the username is null ");
+        assert!(media.clone().to_string() != "","the media is null ");
+        assert!(biography.clone().to_string() != "","the biography is null ");
+        assert!(socialMedia.clone().to_string() != "","the socialMedia is null ");
 
         assert!(username.clone() == env::signer_account_id(),"the caller must be the same as the username sended");
            //this method just receive the info and throws a json log that will be readed by the graph
