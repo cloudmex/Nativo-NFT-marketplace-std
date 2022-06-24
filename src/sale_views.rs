@@ -225,7 +225,7 @@ impl Contract {
     //get the owner from the minter and fins any sale o offer in the market to update
     //this will fix the error after exteral tranfer
     pub fn update_owner_from_minter(&self, nft_contract_id: AccountId ,token_id:TokenId)-> Promise{
-        let token_info:JsonToken;
+       
        
      let p= ext_nft::nft_token(
             token_id.clone(),
@@ -235,7 +235,7 @@ impl Contract {
         ) 
         .then(ext_self::get_promise_result(
             format!("{}{}{}", nft_contract_id, DELIMETER, token_id),
-            market_account.parse::<AccountId>().unwrap(), // el mismo contrato local
+            MARKET_ACCOUNT.parse::<AccountId>().unwrap(), // el mismo contrato local
             NO_DEPOSIT,                                             // yocto NEAR a ajuntar al callback
             Gas(15_000_000_000_000),                            // gas a ajuntar al callback
         ));
@@ -272,9 +272,14 @@ impl Contract {
                // let tg: JsonToken = near_sdk::serde_json::from_str(&newstring).unwrap();  
                 
                  tg.owner_id.to_string();
-                 
+                  
                  let mut sale = None;
+                 env::log_str(&sale.clone().is_none().to_string());
+
+                 
                  let mut offer=None;
+                 env::log_str(&offer.clone().is_none().to_string());
+
                  sale= self.sales.get(&nft_contract_id);
                  offer =self.offers.get(&nft_contract_id);
                  if !sale.clone().is_none() {
@@ -312,6 +317,9 @@ impl Contract {
                  else{
                     env::log_str(  &"no sale/offer found".to_string());
                  }
+                
+
+
                 
                 // let offer =self.offers.get(&nft_contract_id).expect("no offer found");
                 // offer.owner_id.to_string()

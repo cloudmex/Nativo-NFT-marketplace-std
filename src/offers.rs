@@ -1,7 +1,4 @@
-use crate::*;
-  
- 
- 
+use crate::*; 
 //struct that holds important information about each sale on the market
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -30,7 +27,7 @@ const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
 
 #[near_bindgen]
 impl Contract {
-
+ 
     #[payable]
     pub fn add_offer( 
         &mut self,
@@ -55,6 +52,8 @@ impl Contract {
         );
         //1 ask if is listed on the sale structures.
         let mut market_data = None;
+        env::log_str(&market_data.clone().is_none().to_string());
+
         market_data= self.sales.get(&contract_and_token_id);
         //if yes 
         if !market_data.is_none() {
@@ -72,6 +71,8 @@ impl Contract {
 
             //look if exists a previous offer lower than the actual 
            let mut prev_offer=None;
+           env::log_str(&prev_offer.clone().is_none().to_string());
+
                prev_offer= self.offers.get(&contract_and_token_id.clone());
            //if exist 
            if !prev_offer.is_none() {
@@ -144,6 +145,8 @@ impl Contract {
 
              //look if exists a previous offer lower than the actual 
             let mut prev_offer=None;
+            env::log_str(&prev_offer.clone().is_none().to_string());
+
                 prev_offer= self.offers.get(&contract_and_token_id.clone());
             //if exist 
             if !prev_offer.is_none() {
@@ -154,9 +157,9 @@ impl Contract {
                     "The new bid must more than the current bid price: {:?}",
                     u128::from(prev_offer.clone().as_ref().unwrap().price)
                 );
-                //assert that the bidder isnot the previous one
-                env::log_str(&bidder_id.clone().to_string());
-                env::log_str(&prev_offer.as_ref().unwrap().buyer_id.to_string());
+                // //assert that the bidder isnot the previous one
+                // env::log_str(&bidder_id.clone().to_string());
+                // env::log_str(&prev_offer.as_ref().unwrap().buyer_id.to_string());
 
                 assert!(
                     bidder_id.clone()!=prev_offer.as_ref().unwrap().buyer_id,
@@ -239,7 +242,8 @@ impl Contract {
         
         };
       let mut res =None;
-        res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
+      env::log_str(&res.clone().is_none().to_string());
+      res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
 
         if res.is_none() {
             env::log_str("there is not an offer for this token");
@@ -301,7 +305,7 @@ impl Contract {
        // self.update_owner_from_minter(nft_contract_id.clone(), token_id.clone());
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         //get the actual offer nft information
-        let mut market_data = self.offers.get(&contract_and_token_id).expect("The token does not exist");
+        let   market_data = self.offers.get(&contract_and_token_id).expect("The token does not exist");
      
         let caller = env::signer_account_id();
         let old_owner=owner_id.clone();
@@ -378,15 +382,20 @@ impl Contract {
 
 
 
-
+     #[private]
      pub fn add_offer_to_state(&mut self,owner_id: AccountId,bidder_id: AccountId,nft_contract_id:AccountId,token_id:TokenId,newoffer:Offers){
 
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         let mut oldsale = None;
+        env::log_str(&oldsale.clone().is_none().to_string());
+
         oldsale= self.sales.get(&contract_and_token_id.clone());
 
         
         if !oldsale.clone().is_none() {
+
+            env::log_str("insert sale");
+
             let newsale=Sale {
                 token_id: oldsale.clone().unwrap().token_id,
                 nft_contract_id: nft_contract_id.clone().into(),
@@ -408,27 +417,31 @@ impl Contract {
         
             self.sales.insert(&contract_and_token_id.clone(),&newsale );
 
+            
 
 
 
                 //get the sales by owner ID for the given owner. If there are none, we create a new empty set
             let mut by_owner_id = self.by_owner_id.get(&owner_id.clone()).unwrap_or_else(|| {
-            UnorderedSet::new(
-                StorageKey::ByOwnerIdInner {
-                    //we get a new unique prefix for the collection by hashing the owner
-                    account_id_hash: hash_account_id(&owner_id.clone()),
-                }
-                .try_to_vec()
-                .unwrap(),
-            )
-         });
+                UnorderedSet::new(
+                    StorageKey::ByOwnerIdInner {
+                        //we get a new unique prefix for the collection by hashing the owner
+                        account_id_hash: hash_account_id(&owner_id.clone()),
+                    }
+                    .try_to_vec()
+                    .unwrap(),
+                )
+            });
+           
             //insert the unique sale ID into the set
             by_owner_id.insert(&contract_and_token_id.clone());
             //insert that set back into the collection for the owner
             self.by_owner_id.insert(&owner_id.clone(), &by_owner_id);
 
             
-           
+            env::log_str("inserted sale");
+
+            env::log_str("insert contract_id as sale");
             //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
             let mut by_nft_contract_id = self
                 .by_nft_contract_id
@@ -449,23 +462,33 @@ impl Contract {
             //insert the set back into the collection for the given nft contract ID
             self.by_nft_contract_id
                 .insert(&nft_contract_id, &by_nft_contract_id);
-/////////////////
+            /////////////////
+            env::log_str("inserted contract_id as sale");
+ 
+            
         }
       
-        
-        self.offers.insert(&contract_and_token_id.clone(),&newoffer);
+        env::log_str("insert offer");
+        env::log_str("insert offer");
 
-        //get the offers by owner ID for the given owner. If there are none, we create a new empty set
-          let mut offers_by_owner_id = self.offers_by_owner_id.get(&owner_id.clone()).unwrap_or_else(|| {
-            UnorderedSet::new(
-                StorageKey::ByOffersOwnerIdInner {
-                    //we get a new unique prefix for the collection by hashing the owner
-                    account_id_hash: hash_account_id(&owner_id.clone()),
-                }
-                .try_to_vec()
-                .unwrap(),
-            )
-         });
+         self.offers.insert(&contract_and_token_id.clone(),&newoffer);
+
+         env::log_str("inserted offer");
+
+         env::log_str("insert offer by owner");
+
+            //get the offers by owner ID for the given owner. If there are none, we create a new empty set
+            let mut offers_by_owner_id = self.offers_by_owner_id.get(&owner_id.clone()).unwrap_or_else(|| {
+                UnorderedSet::new(
+                    StorageKey::ByOffersOwnerIdInner {
+                        //we get a new unique prefix for the collection by hashing the owner
+                        account_id_hash: hash_account_id(&owner_id.clone()),
+                    }
+                    .try_to_vec()
+                    .unwrap(),
+                )
+            });
+            env::log_str("insert offer by bidder");
 
             //get the offers by bidder ID for the given owner. If there are none, we create a new empty set
             let mut offers_by_bidder_id = self.offers_by_bidder_id.get(&bidder_id.clone()).unwrap_or_else(|| {
@@ -479,19 +502,26 @@ impl Contract {
                 )
             });
 
+
             //insert the unique sale ID into the set
             offers_by_owner_id.insert(&contract_and_token_id.clone());
 
+ 
              //insert the unique sale ID into the set
              offers_by_bidder_id.insert(&contract_and_token_id.clone());
+
+             env::log_str("inserted offer by owner");
+
             //insert that set back into the collection for the owner
             self.offers_by_owner_id.insert(&owner_id, &offers_by_owner_id);
+            env::log_str("inserted offer by bidder");
 
              //insert that set back into the collection for the owner
              self.offers_by_bidder_id.insert(&bidder_id, &offers_by_bidder_id);
 
 
 
+             env::log_str("insert offer by contract");
 
             //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
             let mut offers_by_nft_contract_id = self
@@ -509,10 +539,13 @@ impl Contract {
                 });
 
             //insert the token ID into the set
-            offers_by_nft_contract_id.insert(&token_id);
+            offers_by_nft_contract_id.insert(&contract_and_token_id.clone());
             //insert the set back into the collection for the given nft contract ID
             self.offers_by_nft_contract_id
                 .insert(&nft_contract_id, &offers_by_nft_contract_id);
+
+                env::log_str("inserted offer by contract");
+
     }
 
     

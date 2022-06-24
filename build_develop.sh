@@ -9,12 +9,12 @@ then
 mkdir res
 fi
 
-cp target/wasm32-unknown-unknown/release/Nativo_market_std.wasm ./res/
+cp target/wasm32-unknown-unknown/release/nativo_market_std.wasm ./res/
 
 echo "¿Quieres desplegar el contrato de market?"
 select yn in "Si" "No"; do
     case $yn in
-        Si ) near dev-deploy  --wasmFile res/Nativo_market_std.wasm; break;;
+        Si ) near dev-deploy  --wasmFile res/nativo_market_std.wasm; break;;
         No ) exit;;
     esac
 done
