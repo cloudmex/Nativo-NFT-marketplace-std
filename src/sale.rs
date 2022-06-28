@@ -595,7 +595,7 @@ impl Contract {
         let caller = env::signer_account_id();
         let old_owner=market_data.clone().owner_id;
         // get the bid vec void or not
-        let mut bids = market_data.clone().bids.unwrap_or(Vec::new());
+        let   bids = market_data.clone().bids.unwrap_or(Vec::new());
         // keep the bid vec 
         let current_bid = &bids[bids.len() - 1];
 

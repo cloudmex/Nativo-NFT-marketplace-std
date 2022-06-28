@@ -9,14 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3"
 
 [[package]]
-name = "Nativo-market-std"
-version = "0.1.0"
-dependencies = [
- "near-sdk",
- "near-sys",
-]
-
-[[package]]
 name = "ahash"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -483,6 +475,14 @@ name = "memory_units"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
+
+[[package]]
+name = "nativo_market_std"
+version = "0.1.0"
+dependencies = [
+ "near-sdk",
+ "near-sys",
+]
 
 [[package]]
 name = "near-account-id"

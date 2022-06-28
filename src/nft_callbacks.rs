@@ -104,20 +104,19 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         let SaleArgs {  
             market_type,
             price,
-            ft_token_id,
-            buyer_id,
-            is_auction,
+            // ft_token_id,
+            // buyer_id,
+            // is_auction,
             title,
             description,
             media ,
-            creator_id} =
+            creator_id, .. } =
             //the sale conditions come from the msg field. The market assumes that the user passed
             //in a proper msg. If they didn't, it panics. 
             near_sdk::serde_json::from_str(&msg).expect("Not valid SaleArgs");
  
         //create the unique sale ID which is the contract + DELIMITER + token ID
-        let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
-        let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
+         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
 
          //list a token as sale
         if market_type == "on_sale" {
