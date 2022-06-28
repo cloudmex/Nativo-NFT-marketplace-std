@@ -59,16 +59,15 @@ impl Contract {
             treasure_id: old_state.treasure_id,
             sales: old_state.sales,
             by_owner_id: old_state.by_owner_id,
-            offers_by_owner_id: old_state.offers_by_owner_id,
-            offers_by_bidder_id: old_state.offers_by_bidder_id,
+            offers_by_owner_id: LookupMap::new(StorageKey::ByOffersOwnerId),
+            offers_by_bidder_id: LookupMap::new(StorageKey::ByOffersBidderId),
 
             by_nft_contract_id: old_state.by_nft_contract_id,
-            offers_by_nft_contract_id: old_state.offers_by_nft_contract_id,
-
+            offers_by_nft_contract_id: LookupMap::new(StorageKey::ByOffersNFTContractId),
             storage_deposits: old_state.storage_deposits,
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
-            offers: old_state.offers,
+            offers: UnorderedMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:old_state.is_mining_ntv_enabled,
             collection_id:old_state.collectionID,
 

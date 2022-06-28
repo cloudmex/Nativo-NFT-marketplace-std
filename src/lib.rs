@@ -111,7 +111,7 @@ pub struct Contract {
     pub storage_deposits: LookupMap<AccountId, Balance>,
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
-    pub offers: UnorderedMap<ContractAndTokenId, Offers>,
+    pub offers: LookupMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
     pub collectionID:u64,
 
