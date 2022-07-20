@@ -265,8 +265,8 @@ impl Contract {
             }
             PromiseResult::Successful(result) => {
                 let value = std::str::from_utf8(&result).unwrap();
-                env::log_str("regreso al market");
-                env::log_str(value);
+              //  env::log_str("regreso al market");
+              //  env::log_str(value);
                 let tg: JsonToken = near_sdk::serde_json::from_str(&value).unwrap();
               
                // let tg: JsonToken = near_sdk::serde_json::from_str(&newstring).unwrap();  
@@ -274,16 +274,16 @@ impl Contract {
                  tg.owner_id.to_string();
                   
                  let mut sale = None;
-                 env::log_str(&sale.clone().is_none().to_string());
+            //     env::log_str(&sale.clone().is_none().to_string());
 
                  
                  let mut offer=None;
-                 env::log_str(&offer.clone().is_none().to_string());
+              //   env::log_str(&offer.clone().is_none().to_string());
 
                  sale= self.sales.get(&nft_contract_id);
                  offer =self.offers.get(&nft_contract_id);
                  if !sale.clone().is_none() {
-                    env::log_str( &"on_sale".to_string());
+                //    env::log_str( &"on_sale".to_string());
                 //     //Copy the sale infoº
                 //     let mut lastsale=sale.unwrap();
                 //     //Update the owner sale with the actual minter owner
@@ -295,10 +295,10 @@ impl Contract {
                  }
                 
                 if !offer.is_none() {
-                        env::log_str( &"on_offer".to_string());
+                    //    env::log_str( &"on_offer".to_string());
                         //if the minter owner is the same as the offer
                         if offer.clone().unwrap().buyer_id ==tg.clone().owner_id{
-                            env::log_str( &"you are the token owner with a bid,so we refound you the bid".to_string());
+                         //   env::log_str( &"you are the token owner with a bid,so we refound you the bid".to_string());
                             //refound your bid to the owner and delete the offers
                             //refund
                             Promise::new(offer.clone().unwrap().buyer_id).transfer(offer.clone().unwrap().price.0);
