@@ -22,7 +22,6 @@ pub struct Offers {
 
 }
 
-const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
 
 
 #[near_bindgen]
@@ -52,12 +51,12 @@ impl Contract {
         );
         //1 ask if is listed on the sale structures.
         let mut market_data = None;
-        env::log_str(&market_data.clone().is_none().to_string());
+//        env::log_str(&market_data.clone().is_none().to_string());
 
         market_data= self.sales.get(&contract_and_token_id);
         //if yes 
         if !market_data.is_none() {
-            env::log_str("a sale was found");
+         //   env::log_str("a sale was found");
             //get the deposit and compare with the sales price 
               //assert the deposit is lower than the sales price
                 //add offer
@@ -67,16 +66,16 @@ impl Contract {
                 //     u128::from(market_data.clone().as_ref().unwrap().price)
                 // );
                  //add a offer 
-            env::log_str("add new  makert offer");
+          //  env::log_str("add new  makert offer");
 
             //look if exists a previous offer lower than the actual 
            let mut prev_offer=None;
-           env::log_str(&prev_offer.clone().is_none().to_string());
+         //  env::log_str(&prev_offer.clone().is_none().to_string());
 
                prev_offer= self.offers.get(&contract_and_token_id.clone());
            //if exist 
            if !prev_offer.is_none() {
-               env::log_str("we found a prev bid ");
+            //   env::log_str("we found a prev bid ");
                //aassert the amount is more than the actual bid
                assert!(
                    bid_amount.clone()> u128::from(prev_offer.as_ref().unwrap().price),
@@ -114,7 +113,7 @@ impl Contract {
                    );
 
            }else{
-               env::log_str("we havent found a prev bid ");
+             //  env::log_str("we havent found a prev bid ");
 
                 //create a new offer structure
                 let newoffer = Offers {
@@ -141,16 +140,16 @@ impl Contract {
         }
         else {//not
             //add a offer 
-            env::log_str("add new no makert offer");
+          //  env::log_str("add new no makert offer");
 
              //look if exists a previous offer lower than the actual 
             let mut prev_offer=None;
-            env::log_str(&prev_offer.clone().is_none().to_string());
+           // env::log_str(&prev_offer.clone().is_none().to_string());
 
                 prev_offer= self.offers.get(&contract_and_token_id.clone());
             //if exist 
             if !prev_offer.is_none() {
-                env::log_str("we found a prev bid ");
+              //  env::log_str("we found a prev bid ");
                 //aassert the amount is more than the actual bid
                 assert!(
                     bid_amount.clone()> u128::from(prev_offer.as_ref().unwrap().price),
@@ -190,7 +189,7 @@ impl Contract {
                     );
 
             }else{
-                env::log_str("we havent found a prev bid ");
+               // env::log_str("we havent found a prev bid ");
 
                  //create a new offer structure
                  let newoffer = Offers {
@@ -242,11 +241,11 @@ impl Contract {
         
         };
       let mut res =None;
-      env::log_str(&res.clone().is_none().to_string());
+     // env::log_str(&res.clone().is_none().to_string());
       res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
 
         if res.is_none() {
-            env::log_str("there is not an offer for this token");
+          //  env::log_str("there is not an offer for this token");
             emprs
         }
         else{
@@ -318,7 +317,7 @@ impl Contract {
         //if the signer is the owner he can accept  
         if caller ==old_owner.clone() {
             // accept
-            env::log_str("it's the owner");
+           // env::log_str("it's the owner");
              
                   //remove from the sales 
                      
@@ -368,7 +367,7 @@ impl Contract {
                                         10_000_000_000_000.into(),
                                     );
    
-                                    env::log_str("the nvt token minting was payed");    
+                                //    env::log_str("the nvt token minting was payed");    
                         }else{
                             env::log_str("the nvt token minting is disabled");      
                           }
@@ -387,14 +386,14 @@ impl Contract {
 
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
         let mut oldsale = None;
-        env::log_str(&oldsale.clone().is_none().to_string());
+       // env::log_str(&oldsale.clone().is_none().to_string());
 
         oldsale= self.sales.get(&contract_and_token_id.clone());
 
         
         if !oldsale.clone().is_none() {
 
-            env::log_str("insert sale");
+        //    env::log_str("insert sale");
 
             let newsale=Sale {
                 token_id: oldsale.clone().unwrap().token_id,
@@ -439,9 +438,9 @@ impl Contract {
             self.by_owner_id.insert(&owner_id.clone(), &by_owner_id);
 
             
-            env::log_str("inserted sale");
+         //   env::log_str("inserted sale");
 
-            env::log_str("insert contract_id as sale");
+           // env::log_str("insert contract_id as sale");
             //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
             let mut by_nft_contract_id = self
                 .by_nft_contract_id
@@ -463,19 +462,19 @@ impl Contract {
             self.by_nft_contract_id
                 .insert(&nft_contract_id, &by_nft_contract_id);
             /////////////////
-            env::log_str("inserted contract_id as sale");
+           // env::log_str("inserted contract_id as sale");
  
             
         }
       
-        env::log_str("insert offer");
-        env::log_str("insert offer");
+     //   env::log_str("insert offer");
+    //    env::log_str("insert offer");
 
          self.offers.insert(&contract_and_token_id.clone(),&newoffer);
 
-         env::log_str("inserted offer");
+       //  env::log_str("inserted offer");
 
-         env::log_str("insert offer by owner");
+       //  env::log_str("insert offer by owner");
 
             //get the offers by owner ID for the given owner. If there are none, we create a new empty set
             let mut offers_by_owner_id = self.offers_by_owner_id.get(&owner_id.clone()).unwrap_or_else(|| {
@@ -488,7 +487,7 @@ impl Contract {
                     .unwrap(),
                 )
             });
-            env::log_str("insert offer by bidder");
+           // env::log_str("insert offer by bidder");
 
             //get the offers by bidder ID for the given owner. If there are none, we create a new empty set
             let mut offers_by_bidder_id = self.offers_by_bidder_id.get(&bidder_id.clone()).unwrap_or_else(|| {
@@ -510,18 +509,18 @@ impl Contract {
              //insert the unique sale ID into the set
              offers_by_bidder_id.insert(&contract_and_token_id.clone());
 
-             env::log_str("inserted offer by owner");
+        //     env::log_str("inserted offer by owner");
 
             //insert that set back into the collection for the owner
             self.offers_by_owner_id.insert(&owner_id, &offers_by_owner_id);
-            env::log_str("inserted offer by bidder");
+          //  env::log_str("inserted offer by bidder");
 
              //insert that set back into the collection for the owner
              self.offers_by_bidder_id.insert(&bidder_id, &offers_by_bidder_id);
 
 
 
-             env::log_str("insert offer by contract");
+        //     env::log_str("insert offer by contract");
 
             //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
             let mut offers_by_nft_contract_id = self
@@ -544,7 +543,7 @@ impl Contract {
             self.offers_by_nft_contract_id
                 .insert(&nft_contract_id, &offers_by_nft_contract_id);
 
-                env::log_str("inserted offer by contract");
+                //env::log_str("inserted offer by contract");
 
     }
 
