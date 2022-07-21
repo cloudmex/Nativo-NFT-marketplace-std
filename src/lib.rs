@@ -402,6 +402,7 @@ impl Contract {
                assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
                assert!(media_banner.clone().to_string() != "","the media_banner is null ");
                
+               
                 if _type == "create" {
                     env::log_str(
                         &json!({
