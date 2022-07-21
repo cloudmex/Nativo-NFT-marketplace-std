@@ -53,7 +53,7 @@ impl Contract {
     pub fn migrate() -> Self {
         let old_state: OldContract = env::state_read().expect("failed");
         
-        env::log_str("old state readed");
+       // env::log_str("old state readed");
         Self {
             owner_id: old_state.owner_id,
             treasure_id: old_state.treasure_id,
@@ -69,7 +69,7 @@ impl Contract {
             whitelist_contracts:old_state.whitelist_contracts,
             offers: UnorderedMap::new(StorageKey::OffersOutMarket),
             is_mining_ntv_enabled:old_state.is_mining_ntv_enabled,
-            collection_id:old_state.collectionID,
+            collection_id:old_state.collection_id,
 
         }
     }
@@ -80,7 +80,7 @@ impl Contract {
     #[init(ignore_state)]
     pub fn cleanup()  -> Self {
         
-        env::log_str("clean up state");
+       // env::log_str("clean up state");
         Self {
             //set the owner_id field equal to the passed in owner_id. 
             owner_id:env::signer_account_id(),

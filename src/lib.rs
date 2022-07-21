@@ -30,7 +30,10 @@ mod offer_views;
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
-const MARKET_ACCOUNT : &str ="v3.nativo-market.testnet";
+const MARKET_ACCOUNT : &str ="v4.nativo-market.testnet";
+
+const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
+
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
 
@@ -113,7 +116,7 @@ pub struct Contract {
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: LookupMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
-    pub collectionID:u64,
+    pub collection_id:u64,
 
 
 }
@@ -385,7 +388,9 @@ impl Contract {
            title:String,
            description:String,
            media_icon:String,
-           media_banner:String){
+           media_banner:String,
+           visibility:bool,
+           _type:String){
                assert_one_yocto();
    
                let owner_id = env::signer_account_id();
@@ -397,23 +402,43 @@ impl Contract {
                assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
                assert!(media_banner.clone().to_string() != "","the media_banner is null ");
                
+               
+                if _type == "create" {
+                    env::log_str(
+                        &json!({
+                        "type": _type,
+                        "params": {                   
+                            "owner_id": owner_id,
+                            "title":title,
+                            "description":description,
+                            "media_icon": media_icon,
+                            "media_banner": media_banner,
+                            "collection_id":current_collection_id,
+                                 }
+                         }).to_string(),
+                    );
+                    
+                    self.collection_id+=1;
+
+                }else if _type =="edit"{
+                    env::log_str(
+                        &json!({
+                        "type": _type,
+                        "params": {                   
+                            "owner_id": owner_id,
+                            "title":title,
+                            "description":description,
+                            "media_icon": media_icon,
+                            "media_banner": media_banner,
+                            "collection_id":current_collection_id,
+                            "visibility":visibility,
+                                 }
+                         }).to_string(),
+                    );
+                }
+              
    
-               env::log_str(
-                   &json!({
-                   "type": "new_collection",
-                   "params": {                   
-                       "owner_id": owner_id,
-                       "title":title,
-                       "description":description,
-                       "media_icon": media_icon,
-                       "media_banner": media_banner,
-                       "collection_id":current_collection_id,
-                   }
-               })
-                       .to_string(),
-               );
-   
-               self.collection_id+=1;
+              
            
        }
    
