@@ -341,7 +341,7 @@ impl Contract {
         let commision = newprice as f64 * self.fee_percent;
       //  env::log_str("comision");
       //  env::log_str(&commision.to_string());
-        let comisionu128 = commision as u128;
+      // let comisionu128 = commision as u128;
       //  env::log_str("comision to pay");
       //  env::log_str(&comisionu128.to_string());
 

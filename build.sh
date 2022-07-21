@@ -14,7 +14,7 @@ cp target/wasm32-unknown-unknown/release/nativo_market_std.wasm ./res/
 echo "¿Quieres desplegar el contrato de market?"
 select yn in "Si" "No"; do
     case $yn in
-        Si ) near deploy nativo-mkt.near --wasmFile res/nativo_market_std.wasm; break;;
+        Si ) near deploy $CONTRACT --wasmFile res/nativo_market_std.wasm; break;;
         No ) exit;;
     esac
 done
