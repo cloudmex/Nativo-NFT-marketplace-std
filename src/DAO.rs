@@ -44,6 +44,36 @@ impl Contract {
 
     }
 
+
+//get th actual owner address
+pub fn get_market_account_account(&self) -> String {
+    self.market_account.clone()
+}
+//modificar cuentas
+pub fn set_market_account_account(&mut self,new_account:AccountId) -> String {
+    self.is_the_owner();
+    //if the caller is the owner
+    self.market_account=new_account.to_string();
+    self.market_account.clone()
+
+}
+
+
+//get th actual owner address
+pub fn get_ntvtoken_contract_account(&self) -> String {
+    self.ntvtoken_contract.clone()
+}
+//modificar cuentas
+pub fn set_ntvtoken_contract_account(&mut self,new_account:AccountId) -> String {
+    self.is_the_owner();
+    //if the caller is the owner
+    self.ntvtoken_contract=new_account.to_string();
+    self.ntvtoken_contract.clone()
+
+}
+
+
+
     //method for change the fee percentages
     pub fn get_mint_fee(&self,) {
         let rest= "the fee comision  is: ".to_string()+&self.fee_percent.to_string();

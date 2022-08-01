@@ -235,7 +235,7 @@ impl Contract {
         ) 
         .then(ext_self::get_promise_result(
             format!("{}{}{}", nft_contract_id, DELIMETER, token_id),
-            MARKET_ACCOUNT.parse::<AccountId>().unwrap(), // el mismo contrato local
+            self.market_account.parse::<AccountId>().unwrap(), // el mismo contrato local
             NO_DEPOSIT,                                             // yocto NEAR a ajuntar al callback
             Gas(15_000_000_000_000),                            // gas a ajuntar al callback
         ));

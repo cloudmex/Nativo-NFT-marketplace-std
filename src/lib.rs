@@ -30,9 +30,7 @@ mod offer_views;
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
-const MARKET_ACCOUNT : &str ="v4.nativo-market.testnet";
-
-const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
+ 
 
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
@@ -97,6 +95,8 @@ pub struct Contract {
 
     pub is_mining_ntv_enabled: bool,
     pub collection_id:u64,
+    pub market_account : String,
+    pub ntvtoken_contract:  String,
 
 }
 
@@ -117,9 +117,11 @@ pub struct Contract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
+    pub ntv_multiply:u128,
+
     pub is_mining_ntv_enabled: bool,
     pub collection_id:u64,
-
+ 
 
 }
 
@@ -184,6 +186,8 @@ impl Contract {
             ntv_multiplier:3,
             is_mining_ntv_enabled:true,
             collection_id:0,
+            market_account :"nativo-mkt.near".to_string(),
+            ntvtoken_contract:"nativo_token.near".to_string(),
 
         };
 

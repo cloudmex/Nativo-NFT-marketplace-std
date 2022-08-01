@@ -343,7 +343,7 @@ impl Contract {
                                     ext_nft::mint(
                                         market_data.clone().buyer_id,
                                         tokens_to_mint.to_string(),
-                                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                                        self.ntvtoken_contract.to_string().try_into().unwrap(),
                                         0000000000000000000000001,
                                         10_000_000_000_000.into(),
                                     );
@@ -351,7 +351,7 @@ impl Contract {
                                     ext_nft::mint(
                                         old_owner.clone(),
                                         tokens_to_mint.to_string(),
-                                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                                        self.ntvtoken_contract.to_string().try_into().unwrap(),
                                         0000000000000000000000001,
                                         10_000_000_000_000.into(),
                                     );
