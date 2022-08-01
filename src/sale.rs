@@ -10,8 +10,7 @@ pub struct Bid {
 }
 pub type Bids = Vec<Bid>;
 
-const NTVTOKEN_CONTRACT:  &str = "nativo_token.testnet";
- 
+  
 
  
 #[ext_contract(ext_nft)]
@@ -289,7 +288,7 @@ impl Contract {
                 .and_then(|payout_object| {
                     //we'll check if length of the payout object is > 10 or it's empty. In either case, we return None
                     if payout_object.payout.len() > 10 || payout_object.payout.is_empty() {
-                        env::log_str("Cannot have more than 10 royalties");
+                      //  env::log_str("Cannot have more than 10 royalties");
                         None
                     
                     //if the payout object is the correct length, we move forward
@@ -340,19 +339,19 @@ impl Contract {
         //send the comision to the treasury
         let newprice: u128  = u128::try_from(price).unwrap();
         let commision = newprice as f64 * self.fee_percent;
-        env::log_str("comision");
-        env::log_str(&commision.to_string());
-        let comisionu128 = commision as u128;
-        env::log_str("comision to pay");
-        env::log_str(&comisionu128.to_string());
+      //  env::log_str("comision");
+      //  env::log_str(&commision.to_string());
+      // let comisionu128 = commision as u128;
+      //  env::log_str("comision to pay");
+      //  env::log_str(&comisionu128.to_string());
 
         Promise::new(self.treasure_id.clone()).transfer(commision as u128);
 
            
-       env::log_str("payment without comisiion");
+       //env::log_str("payment without comisiion");
 
         let comision_payed = newprice   - commision as u128;
-        env::log_str(&comision_payed.clone().to_string());
+        //env::log_str(&comision_payed.clone().to_string());
        
  
         let newprice_lesscomision: U128  = U128::try_from(comision_payed).unwrap();
@@ -455,7 +454,7 @@ impl Contract {
         //to add a new bid we must to verify if the token was listed as sale or auction
         //if the token was listed as sale we can add a new bid less o equals to the sale price
         if market_data.is_auction== Some(false){ //this is a sale
-            env::log_str("was listed as sale");
+           // env::log_str("was listed as sale");
 
             //assert that the bid is less than the sale price
             assert!(
@@ -515,7 +514,7 @@ impl Contract {
     
         }//else the token as auction the bid must to be more than  start price
         else{
-            env::log_str("was listed as auction");
+         //   env::log_str("was listed as auction");
             //assert that the bid is less than the sale price
             assert!(
                 bid_amount > market_data.price.0,
@@ -602,7 +601,7 @@ impl Contract {
         //if the signer is the owner he can accept or decline
         if caller == market_data.clone().owner_id {
             // accept
-            env::log_str("it's the owner");
+        //    env::log_str("it's the owner");
             if response==true {
                   //remove from the sales 
                     let selected_bid = bids.clone().remove(&bids.len() - 1);
@@ -633,7 +632,7 @@ impl Contract {
                         );
             }//decline
             else {
-                env::log_str("decline the offer");
+          //      env::log_str("decline the offer");
                 //remove from the sales 
                 
                     //let selected_bid = bids.clone().remove(&bids.len() - 1);
@@ -648,12 +647,12 @@ impl Contract {
            
    
         }else{
-            env::log_str("may its the bidder");
+         //   env::log_str("may its the bidder");
             // if the signer is the bidder he just can decline
           if !bids.is_empty(){
             let current_bid = &bids[bids.len() - 1];
             if caller == current_bid.bidder_id{
-                env::log_str("decline the offer");
+              //  env::log_str("decline the offer");
 
                 //accept
                 if response==true {
