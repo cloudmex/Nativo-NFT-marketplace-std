@@ -16,16 +16,16 @@ impl Contract {
         self.treasure_id.clone()
     }
 
-    pub fn set_ntv_multiply(&mut self, 
-        multiply:u128) -> u128 {
+    pub fn set_ntv_multiplier(&mut self, 
+        multiplier:u128) -> u128 {
             self.is_the_owner();
-            self.ntv_multiply=multiply;
-            self.ntv_multiply
+            self.ntv_multiplier=multiplier;
+            self.ntv_multiplier
         }
 
-    pub fn get_ntv_multiply(& self) -> u128 {
+    pub fn get_ntv_multiplier(& self) -> u128 {
               
-                self.ntv_multiply
+                self.ntv_multiplier
             }
 
    

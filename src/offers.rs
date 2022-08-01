@@ -338,7 +338,7 @@ impl Contract {
                         if self.is_mining_ntv_enabled {
 
                                //pay the NTV 
-                                    let tokens_to_mint = u128::from(market_data.clone().price) * self.ntv_multiply ;
+                                    let tokens_to_mint = u128::from(market_data.clone().price) * self.ntv_multiplier ;
                                     // NTV for the buyer
                                     ext_nft::mint(
                                         market_data.clone().buyer_id,

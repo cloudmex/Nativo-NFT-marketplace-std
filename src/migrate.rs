@@ -69,7 +69,7 @@ impl Contract {
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
             offers: old_state.offers,
-            ntv_multiply:3,
+            ntv_multiplier:3,
 
             is_mining_ntv_enabled:old_state.is_mining_ntv_enabled,
             collection_id:old_state.collection_id,
@@ -99,7 +99,7 @@ impl Contract {
             fee_percent:0.6,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: UnorderedMap::new(StorageKey::OffersOutMarket),
-            ntv_multiply:3,
+            ntv_multiplier:3,
 
             is_mining_ntv_enabled:true,
             collection_id:0,
