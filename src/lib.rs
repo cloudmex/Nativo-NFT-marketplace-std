@@ -93,6 +93,8 @@ pub struct Contract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
+    pub ntv_multiply:u128,
+
     pub is_mining_ntv_enabled: bool,
     pub collection_id:u64,
 
@@ -116,7 +118,7 @@ pub struct Contract {
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
     pub is_mining_ntv_enabled: bool,
-    pub collectionID:u64,
+    pub collection_id:u64,
 
 
 }
@@ -179,6 +181,7 @@ impl Contract {
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: UnorderedMap::new(StorageKey::OffersOutMarket),
+            ntv_multiply:3,
             is_mining_ntv_enabled:true,
             collection_id:0,
 
@@ -480,5 +483,7 @@ impl Contract {
             None
         }
     }
+
+
 
 }

@@ -14,7 +14,7 @@ cp target/wasm32-unknown-unknown/release/nativo_market_std.wasm ./res/
 echo "¿Quieres desplegar el contrato de market?"
 select yn in "Si" "No"; do
     case $yn in
-        Si ) near deploy  --wasmFile res/nativo_market_std.wasm --initFunction "migrate"  --initArgs "{}"  --accountId $CONTRACT_ID;  break;;
+        Si ) near deploy  --wasmFile res/nativo_market_std.wasm --initFunction "migrate"  --initArgs "{}"  --accountId $CONTRACT;  break;;
         No ) exit;;
     esac
 done

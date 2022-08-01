@@ -184,7 +184,7 @@ impl Contract {
       
         if self.is_mining_ntv_enabled {
 
-                    let tokens_to_mint = deposit.clone() * 3;
+                    let tokens_to_mint = deposit.clone() * self.ntv_multiply;
                     // NTV for the buyer
                     ext_nft::mint(
                         buyer_id.clone(),

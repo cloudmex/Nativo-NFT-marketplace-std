@@ -273,15 +273,13 @@ impl Contract {
                 
                  tg.owner_id.to_string();
                   
-                 let mut sale = None;
+                 let   sale:Option<Sale> = self.sales.get(&nft_contract_id);
             //     env::log_str(&sale.clone().is_none().to_string());
 
                  
-                 let mut offer=None;
+                 let   offer:Option<Offers>=self.offers.get(&nft_contract_id);
               //   env::log_str(&offer.clone().is_none().to_string());
-
-                 sale= self.sales.get(&nft_contract_id);
-                 offer =self.offers.get(&nft_contract_id);
+ 
                  if !sale.clone().is_none() {
                 //    env::log_str( &"on_sale".to_string());
                 //     //Copy the sale infoº
