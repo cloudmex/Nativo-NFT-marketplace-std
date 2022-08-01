@@ -54,18 +54,6 @@ impl Contract {
         let old_state: OldContract = env::state_read().expect("failed");
         
         env::log_str("old state readed");
-        env::log_str(
-            &json!({
-            "type": "new_collection",
-            "params": {
-                "fee_percent": old_state.fee_percent,
-                "ntv_multiplier": old_state.ntv_multiply.to_string(),
-                "is_mining_ntv_enabled":old_state.is_mining_ntv_enabled,
-               
-            }
-        })
-                .to_string(),
-        );
 
 
         Self {
@@ -83,7 +71,7 @@ impl Contract {
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
             offers: old_state.offers,
-            ntv_multiplier:3,
+            ntv_multiplier:9,
 
             is_mining_ntv_enabled:true,
             collection_id:old_state.collection_id,

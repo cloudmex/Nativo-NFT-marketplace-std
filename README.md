@@ -132,6 +132,7 @@ near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"minterv2.n
 ### get the total offers's by owner   
 `near view $CONTRACT get_supply_offers_by_owner_id '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet`
 ### get the total offers's by bidder
+
 near view $CONTRACT get_supply_offers_by_bidder_id '{"account_id":"darkdokxo.testnet"}' --accountId dokxo.testnet
 
 ### get the  offers by owner
