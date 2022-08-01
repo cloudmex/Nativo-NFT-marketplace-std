@@ -53,7 +53,21 @@ impl Contract {
     pub fn migrate() -> Self {
         let old_state: OldContract = env::state_read().expect("failed");
         
-       // env::log_str("old state readed");
+        env::log_str("old state readed");
+        env::log_str(
+            &json!({
+            "type": "new_collection",
+            "params": {
+                "fee_percent": old_state.fee_percent,
+                "ntv_multiplier": old_state.ntv_multiply.to_string(),
+                "is_mining_ntv_enabled":old_state.is_mining_ntv_enabled,
+               
+            }
+        })
+                .to_string(),
+        );
+
+
         Self {
             owner_id: old_state.owner_id,
             treasure_id: old_state.treasure_id,
@@ -69,8 +83,12 @@ impl Contract {
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
             offers: old_state.offers,
-            is_mining_ntv_enabled:old_state.is_mining_ntv_enabled,
-            collection_id:old_state.collectionID,
+            ntv_multiplier:3,
+
+            is_mining_ntv_enabled:true,
+            collection_id:old_state.collection_id,
+            market_account :"nativo-mkt.near".to_string(),
+            ntvtoken_contract:"nativo_token.near".to_string(),
 
         }
     }
@@ -97,8 +115,12 @@ impl Contract {
             fee_percent:0.6,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: UnorderedMap::new(StorageKey::OffersOutMarket),
+            ntv_multiplier:3,
+
             is_mining_ntv_enabled:true,
             collection_id:0,
+            market_account :"nativo-mkt.near".to_string(),
+            ntvtoken_contract:"nativo_token.near".to_string(),
 
         }
     }

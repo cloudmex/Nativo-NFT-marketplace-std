@@ -235,7 +235,7 @@ impl Contract {
         ) 
         .then(ext_self::get_promise_result(
             format!("{}{}{}", nft_contract_id, DELIMETER, token_id),
-            MARKET_ACCOUNT.parse::<AccountId>().unwrap(), // el mismo contrato local
+            self.market_account.parse::<AccountId>().unwrap(), // el mismo contrato local
             NO_DEPOSIT,                                             // yocto NEAR a ajuntar al callback
             Gas(15_000_000_000_000),                            // gas a ajuntar al callback
         ));
@@ -273,15 +273,13 @@ impl Contract {
                 
                  tg.owner_id.to_string();
                   
-                 let mut sale = None;
+                 let   sale:Option<Sale> = self.sales.get(&nft_contract_id);
             //     env::log_str(&sale.clone().is_none().to_string());
 
                  
-                 let mut offer=None;
+                 let   offer:Option<Offers>=self.offers.get(&nft_contract_id);
               //   env::log_str(&offer.clone().is_none().to_string());
-
-                 sale= self.sales.get(&nft_contract_id);
-                 offer =self.offers.get(&nft_contract_id);
+ 
                  if !sale.clone().is_none() {
                 //    env::log_str( &"on_sale".to_string());
                 //     //Copy the sale infoº

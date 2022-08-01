@@ -30,9 +30,7 @@ mod offer_views;
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
 const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
-const MARKET_ACCOUNT : &str ="nativo-mkt.near";
-
-const NTVTOKEN_CONTRACT:  &str = "nativo-token.near";
+ 
 
 //constant used to attach 0 NEAR to a call
 const NO_DEPOSIT: Balance = 0;
@@ -93,8 +91,12 @@ pub struct Contract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
+    pub ntv_multiplier:u128,
+
     pub is_mining_ntv_enabled: bool,
     pub collection_id:u64,
+    pub market_account : String,
+    pub ntvtoken_contract:  String,
 
 }
 
@@ -115,9 +117,11 @@ pub struct Contract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
-    pub is_mining_ntv_enabled: bool,
-    pub collectionID:u64,
+    pub ntv_multiply:u128,
 
+    pub is_mining_ntv_enabled: bool,
+    pub collection_id:u64,
+ 
 
 }
 
@@ -179,8 +183,11 @@ impl Contract {
             fee_percent:0.03,
             whitelist_contracts: LookupMap::new(StorageKey::ContractAllowed),
             offers: UnorderedMap::new(StorageKey::OffersOutMarket),
+            ntv_multiplier:3,
             is_mining_ntv_enabled:true,
             collection_id:0,
+            market_account :"nativo-mkt.near".to_string(),
+            ntvtoken_contract:"nativo_token.near".to_string(),
 
         };
 
@@ -388,7 +395,9 @@ impl Contract {
            title:String,
            description:String,
            media_icon:String,
-           media_banner:String){
+           media_banner:String,
+           visibility:bool,
+           _type:String){
                assert_one_yocto();
    
                let owner_id = env::signer_account_id();
@@ -400,23 +409,42 @@ impl Contract {
                assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
                assert!(media_banner.clone().to_string() != "","the media_banner is null ");
                
+                if _type == "create" {
+                    env::log_str(
+                        &json!({
+                        "type": _type,
+                        "params": {                   
+                            "owner_id": owner_id,
+                            "title":title,
+                            "description":description,
+                            "media_icon": media_icon,
+                            "media_banner": media_banner,
+                            "collection_id":current_collection_id,
+                                 }
+                         }).to_string(),
+                    );
+                    
+                    self.collection_id+=1;
+
+                }else if _type =="edit"{
+                    env::log_str(
+                        &json!({
+                        "type": _type,
+                        "params": {                   
+                            "owner_id": owner_id,
+                            "title":title,
+                            "description":description,
+                            "media_icon": media_icon,
+                            "media_banner": media_banner,
+                            "collection_id":current_collection_id,
+                            "visibility":visibility,
+                                 }
+                         }).to_string(),
+                    );
+                }
+              
    
-               env::log_str(
-                   &json!({
-                   "type": "new_collection",
-                   "params": {                   
-                       "owner_id": owner_id,
-                       "title":title,
-                       "description":description,
-                       "media_icon": media_icon,
-                       "media_banner": media_banner,
-                       "collection_id":current_collection_id,
-                   }
-               })
-                       .to_string(),
-               );
-   
-               self.collection_id+=1;
+              
            
        }
    
@@ -459,5 +487,7 @@ impl Contract {
             None
         }
     }
+
+
 
 }

@@ -50,10 +50,7 @@ impl Contract {
             "The bid must be more than 0"
         );
         //1 ask if is listed on the sale structures.
-        let mut market_data = None;
-//        env::log_str(&market_data.clone().is_none().to_string());
-
-        market_data= self.sales.get(&contract_and_token_id);
+        let   market_data:Option<Sale> =  self.sales.get(&contract_and_token_id);
         //if yes 
         if !market_data.is_none() {
          //   env::log_str("a sale was found");
@@ -69,10 +66,7 @@ impl Contract {
           //  env::log_str("add new  makert offer");
 
             //look if exists a previous offer lower than the actual 
-           let mut prev_offer=None;
-         //  env::log_str(&prev_offer.clone().is_none().to_string());
-
-               prev_offer= self.offers.get(&contract_and_token_id.clone());
+           let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
            //if exist 
            if !prev_offer.is_none() {
             //   env::log_str("we found a prev bid ");
@@ -143,10 +137,7 @@ impl Contract {
           //  env::log_str("add new no makert offer");
 
              //look if exists a previous offer lower than the actual 
-            let mut prev_offer=None;
-           // env::log_str(&prev_offer.clone().is_none().to_string());
-
-                prev_offer= self.offers.get(&contract_and_token_id.clone());
+            let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
             //if exist 
             if !prev_offer.is_none() {
               //  env::log_str("we found a prev bid ");
@@ -240,9 +231,7 @@ impl Contract {
             ft_token_id:Some("null".parse::<AccountId>().unwrap()),
         
         };
-      let mut res =None;
-     // env::log_str(&res.clone().is_none().to_string());
-      res =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
+      let   res:Option<Offers> =self.offers.get(&format!("{}{}{}", nft_contract_id, DELIMETER, token_id)) ;
 
         if res.is_none() {
           //  env::log_str("there is not an offer for this token");
@@ -349,12 +338,12 @@ impl Contract {
                         if self.is_mining_ntv_enabled {
 
                                //pay the NTV 
-                                    let tokens_to_mint = u128::from(market_data.clone().price) * 3 ;
+                                    let tokens_to_mint = u128::from(market_data.clone().price) * self.ntv_multiplier ;
                                     // NTV for the buyer
                                     ext_nft::mint(
                                         market_data.clone().buyer_id,
                                         tokens_to_mint.to_string(),
-                                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                                        self.ntvtoken_contract.to_string().try_into().unwrap(),
                                         0000000000000000000000001,
                                         10_000_000_000_000.into(),
                                     );
@@ -362,7 +351,7 @@ impl Contract {
                                     ext_nft::mint(
                                         old_owner.clone(),
                                         tokens_to_mint.to_string(),
-                                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                                        self.ntvtoken_contract.to_string().try_into().unwrap(),
                                         0000000000000000000000001,
                                         10_000_000_000_000.into(),
                                     );
@@ -385,10 +374,7 @@ impl Contract {
      pub fn add_offer_to_state(&mut self,owner_id: AccountId,bidder_id: AccountId,nft_contract_id:AccountId,token_id:TokenId,newoffer:Offers){
 
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
-        let mut oldsale = None;
-       // env::log_str(&oldsale.clone().is_none().to_string());
-
-        oldsale= self.sales.get(&contract_and_token_id.clone());
+        let   oldsale:Option<Sale> = self.sales.get(&contract_and_token_id.clone());
 
         
         if !oldsale.clone().is_none() {

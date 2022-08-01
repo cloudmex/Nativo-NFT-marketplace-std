@@ -16,7 +16,17 @@ impl Contract {
         self.treasure_id.clone()
     }
 
+    pub fn set_ntv_multiplier(&mut self, 
+        multiplier:u128) -> u128 {
+            self.is_the_owner();
+            self.ntv_multiplier=multiplier;
+            self.ntv_multiplier
+        }
 
+    pub fn get_ntv_multiplier(& self) -> u128 {
+              
+                self.ntv_multiplier
+            }
 
    
 
@@ -33,6 +43,36 @@ impl Contract {
         self.owner_id.clone()
 
     }
+
+
+//get th actual owner address
+pub fn get_market_account_account(&self) -> String {
+    self.market_account.clone()
+}
+//modificar cuentas
+pub fn set_market_account_account(&mut self,new_account:AccountId) -> String {
+    self.is_the_owner();
+    //if the caller is the owner
+    self.market_account=new_account.to_string();
+    self.market_account.clone()
+
+}
+
+
+//get th actual owner address
+pub fn get_ntvtoken_contract_account(&self) -> String {
+    self.ntvtoken_contract.clone()
+}
+//modificar cuentas
+pub fn set_ntvtoken_contract_account(&mut self,new_account:AccountId) -> String {
+    self.is_the_owner();
+    //if the caller is the owner
+    self.ntvtoken_contract=new_account.to_string();
+    self.ntvtoken_contract.clone()
+
+}
+
+
 
     //method for change the fee percentages
     pub fn get_mint_fee(&self,) {

@@ -184,12 +184,12 @@ impl Contract {
       
         if self.is_mining_ntv_enabled {
 
-                    let tokens_to_mint = deposit.clone() * 3;
+                    let tokens_to_mint = deposit.clone() * self.ntv_multiplier;
                     // NTV for the buyer
                     ext_nft::mint(
                         buyer_id.clone(),
                         tokens_to_mint.to_string(),
-                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                        self.ntvtoken_contract.to_string().try_into().unwrap(),
                         0000000000000000000000001,
                         10_000_000_000_000.into(),
                     );
@@ -197,7 +197,7 @@ impl Contract {
                     ext_nft::mint(
                         sale.clone().owner_id,
                         tokens_to_mint.to_string(),
-                        NTVTOKEN_CONTRACT.to_string().try_into().unwrap(),
+                        self.ntvtoken_contract.to_string().try_into().unwrap(),
                         0000000000000000000000001,
                         10_000_000_000_000.into(),
                     );
@@ -341,7 +341,7 @@ impl Contract {
         let commision = newprice as f64 * self.fee_percent;
       //  env::log_str("comision");
       //  env::log_str(&commision.to_string());
-        let comisionu128 = commision as u128;
+      // let comisionu128 = commision as u128;
       //  env::log_str("comision to pay");
       //  env::log_str(&comisionu128.to_string());
 

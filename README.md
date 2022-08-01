@@ -32,6 +32,12 @@ near call $CONTRACT new '{"owner_id":"dokxo.testnet"}'  --accountId dokxo.testne
 ### set the fee for buy and sell 
 `near call $CONTRACT set_mint_fee '{"mint_fee":0.995}' --accountId dokxo.testnet`
 
+### get the ntv multiplier for buy and sell 
+`near view $CONTRACT  get_ntv_multiplier`
+
+### set the ntv multiplier for buy and sell 
+`near call $CONTRACT  set_ntv_multiplier '{"multiplier":4}' --accountId dokxo.testnet`
+
 ### set a new contract in the whitelist
 near call $CONTRACT add_new_ext_contract '{"address_contract":"minterv2.nativo-minter.testnet","contract_name":"Nativo minter"}' --accountId dokxo.testnet
 ### Uograde command by owner
