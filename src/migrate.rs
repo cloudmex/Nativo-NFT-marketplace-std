@@ -71,12 +71,12 @@ impl Contract {
             fee_percent:old_state.fee_percent,
             whitelist_contracts:old_state.whitelist_contracts,
             offers: old_state.offers,
-            ntv_multiplier:9,
+            ntv_multiplier:old_state.ntv_multiplier,
 
             is_mining_ntv_enabled:true,
             collection_id:old_state.collection_id,
-            market_account :"nativo-mkt.near".to_string(),
-            ntvtoken_contract:"nativo_token.near".to_string(),
+            market_account :old_state.market_account,
+            ntvtoken_contract:old_state.ntvtoken_contract,
 
         }
     }

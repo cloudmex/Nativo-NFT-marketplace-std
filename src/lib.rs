@@ -117,9 +117,13 @@ pub struct Contract {
     pub fee_percent :f64,
     pub whitelist_contracts: LookupMap<AccountId, ExternalContract>,
     pub offers: UnorderedMap<ContractAndTokenId, Offers>,
+    pub ntv_multiplier:u128,
+
 
     pub is_mining_ntv_enabled: bool,
     pub collection_id:u64,
+    pub market_account : String,
+    pub ntvtoken_contract:  String,
  
 
 }
@@ -396,7 +400,8 @@ impl Contract {
            media_icon:String,
            media_banner:String,
            visibility:bool,
-           _type:String){
+           _type:String,
+           _id:String){
                assert_one_yocto();
    
                let owner_id = env::signer_account_id();
@@ -419,6 +424,7 @@ impl Contract {
                             "media_icon": media_icon,
                             "media_banner": media_banner,
                             "collection_id":current_collection_id,
+                            "visibility":visibility,
                                  }
                          }).to_string(),
                     );
@@ -426,7 +432,7 @@ impl Contract {
                     self.collection_id+=1;
 
                 }else if _type =="edit"{
-                    env::log_str(
+                     env::log_str(
                         &json!({
                         "type": _type,
                         "params": {                   
@@ -435,7 +441,7 @@ impl Contract {
                             "description":description,
                             "media_icon": media_icon,
                             "media_banner": media_banner,
-                            "collection_id":current_collection_id,
+                            "collection_id":_id.parse::<u64>().unwrap() ,
                             "visibility":visibility,
                                  }
                          }).to_string(),
