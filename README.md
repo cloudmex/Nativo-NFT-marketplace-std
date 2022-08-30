@@ -32,7 +32,7 @@
 
 
 ### Set the contract owner address
-`near call $CONTRACT set_owner_account '{"new_account":"nativo-dao.sputnikv2.testnet"}' --accountId dokxo.testnet`
+`near call error.nativo-market.testnet set_owner_account '{"new_account":"dokxo_testnet"}' --accountId dokxo.testnet`
 ### Set the contract treasury address
 `near call $CONTRACT set_treasury '{"new_account":"joehank.testnet"}' --accountId dokxo.testnet`
 ### Set the fee for buy and sell 
@@ -44,7 +44,7 @@
 
 ## Create proposals in the DAO
 ## Make an update proposal to add a new feature
-`sputnikdao proposal upgrade ./res/nativo_market_std.wasm $CONTRACT --daoAcc nativo-dao --accountId dokxo.testnet`
+`sputnikdao proposal upgrade ./res/nativo_market_std.wasm error.nativo-market.testnet --daoAcc nativo-dao --accountId darkdokxo.testnet`
 
 ## Update the Market owner
 `sputnikdao proposal call  $CONTRACT set_owner_account '{"new_account":"alexiaab.testnet"}' --daoAcc nativo-dao --accountId nativo-market.testnet`
@@ -120,3 +120,10 @@
 ### get the total  offers's by contract  
 `near view $CONTRACT get_offers_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
 
+
+
+
+
+
+
+ 
