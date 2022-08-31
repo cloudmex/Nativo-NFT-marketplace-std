@@ -12,7 +12,7 @@ impl Contract {
     #[cfg(target_arch = "wasm32")]
     pub fn upgrade(self) {
         use near_sys as sys;
-        assert!(env::predecessor_account_id() == self.owner_account_id);
+        assert!(env::predecessor_account_id() == self.owner_id);
         const GAS_FOR_UPGRADE: u64 = 20 * TGAS; //gas occupied by this fn
        // const BLOCKCHAIN_INTERFACE_NOT_SET_ERR: &str = "Blockchain interface not set.";
         //after upgrade we call *pub fn migrate()* on the NEW CODE
