@@ -190,7 +190,7 @@ impl Contract {
             is_mining_ntv_enabled:true,
             collection_id:0,
             market_account :"nativo-mkt.near".to_string(),
-            ntvtoken_contract:"nativo_token.near".to_string(),
+            ntvtoken_contract:"nativo-token.near".to_string(),
 
         };
 
@@ -452,13 +452,7 @@ impl Contract {
               
            
        }
-   
 
-
-     //method to test the remote upgrade
-    pub fn rfpoekfnljdhj(&self) -> String {
-        "Holaa remote now2 ".to_string()
-    } 
 
 
       //get the information for a specific token ID

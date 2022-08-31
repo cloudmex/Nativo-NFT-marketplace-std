@@ -86,29 +86,20 @@ pub fn set_ntvtoken_contract_account(&mut self,new_account:AccountId) -> String 
         self.fee_percent=mint_fee;        
     }
 
-
-     #[payable]
+    // This method is payable based on future versions that opens the contract to new markets
+    #[payable]
     pub fn add_new_ext_contract(
         &mut self,
         address_contract: AccountId,
         contract_name: String,
     ) {
-         
-        //self.is_the_owner();
+        // Validate that the DAO is calling the method
+        self.is_the_owner();
         // validate that the info sended isnt empty
         assert_eq!(address_contract.to_string().is_empty(),false,"the contract address cannot be empty");
-//assert_eq!(address_owner.to_string().is_empty(), false,"the owner address cannot be empty");
+        //assert_eq!(address_owner.to_string().is_empty(), false,"the owner address cannot be empty");
         assert_eq!(contract_name.is_empty(), false, "the title cannot be empty");
-        // validate that the attached sended is correct
-       /* let amount = env::attached_deposit();
-        assert_eq!(
-            "5000000000000000000000000"
-                .to_string()
-                .parse::<u128>()
-                .unwrap(),
-            amount,
-            "Wrong amount deposited,please check for the correct amount!"
-        );*/
+
         // validate if the contract already exist,dont create a new one
         let contract_exist = self.whitelist_contracts.get(&address_contract.clone());
         if !contract_exist.is_none() {
