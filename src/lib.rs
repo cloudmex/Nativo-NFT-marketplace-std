@@ -13,6 +13,8 @@ use crate::internal::*;
 use crate::sale::*;
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 pub use crate::migrate::*;
+pub use crate::events::*;
+
 pub use crate::dao::*;
 pub use crate::offers::*;
 pub use crate::offer_views::*;
@@ -22,6 +24,7 @@ mod nft_callbacks;
 mod sale;
 mod sale_views;
 mod migrate;
+mod events;
 mod dao;
 mod offers;
 mod offer_views;
@@ -47,7 +50,7 @@ pub type TokenId = String;
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
 //defines the payout type we'll be parsing from the NFT contract as a part of the royalty standard.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Payout {
     pub payout: HashMap<AccountId, U128>,

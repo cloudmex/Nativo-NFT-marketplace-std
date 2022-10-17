@@ -38,176 +38,168 @@ impl Contract {
          let bidder_id= env::predecessor_account_id();
          let bid_amount = env::attached_deposit();
 
+        //DECLARE A NEW OUTPUT STRUCT FOR EVENT JSON TO ADDA NEW OFFER
+       let  mut new_event=  AddOffer {
+              current_owner_id:owner_id.clone(),
+              old_bidder_account_id:None,
+              bidder_account_id: bidder_id.clone(),
+              nft_contract_id: nft_contract_id.clone(),
+              token_id: token_id.clone(),
+              bidded_price: U128::from(bid_amount) ,
+              offer_time:env::block_timestamp(),
+              _type:None,
+        } ;
+
         // create the index
         let contract_and_token_id = format!("{}{}{}", &nft_contract_id, DELIMETER, token_id);
 
-        assert!(
-            bidder_id.clone()!=owner_id.clone(),
-            "You can not add a bid for your token"
-        );
-        assert!(
-            bid_amount.clone()> 0,
-            "The bid must be more than 0"
-        );
-        //1 ask if is listed on the sale structures.
+        assert!( bidder_id.clone()!=owner_id.clone(),"You can not add a bid for your token");
+        assert!( bid_amount.clone()> 0,"The bid must be more than 0");
+
+        //1 LOOKD IF THE TOKEN HAS A PREV SALE
         let   market_data:Option<Sale> =  self.sales.get(&contract_and_token_id);
-        //if yes 
+        //IF THE TOKEN IS LISTED AS SALE 
         if !market_data.is_none() {
-         //   env::log_str("a sale was found");
-            //get the deposit and compare with the sales price 
-              //assert the deposit is lower than the sales price
-                //add offer
-                // assert!(
-                //     bid_amount.clone()< u128::from(market_data.as_ref().unwrap().price),
-                //     "The new bid must be lower than the current sale price: {:?}",
-                //     u128::from(market_data.clone().as_ref().unwrap().price)
-                // );
-                 //add a offer 
-          //  env::log_str("add new  makert offer");
+            //OFERT SYNC WILL BE ADDED
 
-            //look if exists a previous offer lower than the actual 
-           let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
-           //if exist 
-           if !prev_offer.is_none() {
-            //   env::log_str("we found a prev bid ");
-               //aassert the amount is more than the actual bid
-               assert!(
-                   bid_amount.clone()> u128::from(prev_offer.as_ref().unwrap().price),
-                   "The new bid must more than the current bid price: {:?}",
-                   u128::from(prev_offer.clone().as_ref().unwrap().price)
-               );
-               //assert that the bidder isnot the previous one
-             
-               assert!(
-                   bidder_id.clone()!=prev_offer.as_ref().unwrap().buyer_id,
-                   "You can not add a new bid having one active"
-               );
-                   //refound the bid to the bidder
-                   Promise::new(prev_offer.clone().unwrap().buyer_id).transfer(u128::from(prev_offer.as_ref().unwrap().price));
-                   //create a new offer structure
-                   let newoffer = Offers {
-                       token_id: token_id.clone() ,
-                       nft_contract_id: nft_contract_id.clone().into() ,
-                       owner_id:  owner_id.clone()  ,
-                       buyer_id: bidder_id.clone() ,
-                       approval_id: market_data.clone().as_ref().unwrap().approval_id ,
-                       price:  bid_amount.into(),
-                       ft_token_id: None,
+            new_event._type=Some("offer_sync".to_string());
+         
+            //LOOK IF THE SALE HAS A PREV BID SYNC  
+            let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
+            //IF THE SALE HAS A OLD BID
+            if !prev_offer.is_none() {
+          
+                //SAVE THE OLD BIDDER IN THE OUTPUT STRUCTURE
+                    new_event.old_bidder_account_id=Some(prev_offer.clone().unwrap().buyer_id);
+                //Assert the amount is more than the actual bid
+                    assert!(bid_amount.clone()> u128::from(prev_offer.clone().unwrap().price),
+                    "The new bid must more than the current bid price: {:?}",u128::from(prev_offer.clone().as_ref().unwrap().price));
+               
+                //assert that the bidder isnot the previous one    
+                   assert!( bidder_id.clone()!=prev_offer.clone().unwrap().buyer_id,"You can not add a new bid having one active" );
+                
+                    //refound the bid to the old bidder
+                        Promise::new(prev_offer.clone().unwrap().buyer_id).transfer(u128::from(prev_offer.as_ref().unwrap().price));
+                    //create a new offer structure
+                        let newoffer = Offers {
+                            token_id: token_id.clone() ,
+                            nft_contract_id: nft_contract_id.clone().into() ,
+                            owner_id:  owner_id.clone()  ,
+                            buyer_id: bidder_id.clone() ,
+                            approval_id: market_data.clone().as_ref().unwrap().approval_id ,
+                            price:  bid_amount.into(),
+                            ft_token_id: None,};
 
-                   };
                    //save the offer to the contract_
-                   self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
+                        self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
 
-                   env::log_str(
-                       &json!({
-                       "type": "place_a_non_empty_offer",
-                       "params": newoffer 
-                   })
-                           .to_string(),
-                   );
+                    // THIS WILL THROW A EVENT TO NOTIFY THAT THE SALE HAS A OLD BID,A NEW HIGHEST BID AND SHOULD BE 
+                    //NOTIFIED THAT 
+                    // > THE ONWER HAS A NEW OFFER 
+                    // > THE OLD BIDDER HAS BEEN SURPASSED AND HE GOT HIS BID
+                    // > THE NEW BIDDER IS SETTED AS THE HIGHEST BIDDER
+        
+                        // THROW THE  OFFER SYNC WITH PREV OFFER
 
-           }else{
-             //  env::log_str("we havent found a prev bid ");
+                        Contract::event_add_offer(new_event); 
 
+           } //IF THE SALE DOESNT HAS A OLD BID
+           else{
+ 
                 //create a new offer structure
                 let newoffer = Offers {
-                   token_id: token_id.clone() ,
-                   nft_contract_id: nft_contract_id.clone().into() ,
-                   owner_id:  owner_id.clone()  ,
-                   buyer_id: bidder_id.clone() ,
-                   approval_id: market_data.clone().as_ref().unwrap().approval_id  ,
-                   price:  bid_amount.into(),
-                   ft_token_id: None,
+                        token_id: token_id.clone() ,
+                        nft_contract_id: nft_contract_id.clone().into() ,
+                        owner_id:  owner_id.clone()  ,
+                        buyer_id: bidder_id.clone() ,
+                        approval_id: market_data.clone().as_ref().unwrap().approval_id  ,
+                        price:  bid_amount.into(),
+                        ft_token_id: None, };
 
-               };
-               //save the offer to the contract_
-               self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
-               env::log_str(
-                   &json!({
-                   "type": "place_a_empty_offer",
-                   "params": newoffer 
-               })
-                       .to_string(),
-               );
+                //save the offer to the contract_
+                     self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
+              
+                // THIS WILL THROW A EVENT TO NOTIFY THAT THE SALE HAS A OLD BID,A NEW HIGHEST BID AND SHOULD BE 
+                //NOTIFIED THAT 
+                // > THE ONWER HAS A NEW OFFER 
+                // > THE NEW BIDDER IS SETTED AS THE HIGHEST BIDDER
+        
+                // THROW THE  OFFER SYNC WITHOUT PREV OFFER
+                    Contract::event_add_offer(new_event); 
 
            }
+        
+                    
         }
-        else {//not
-            //add a offer 
-          //  env::log_str("add new no makert offer");
+        //IF THE TOKEN ISN'T LISTED AS SALE 
+        else {
 
-             //look if exists a previous offer lower than the actual 
-            let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
-            //if exist 
-            if !prev_offer.is_none() {
-              //  env::log_str("we found a prev bid ");
+            new_event._type=Some("offer_async".to_string());
+
+            //look if exists a previous offer lower than the actual 
+                let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
+            //IF THE NFT NOT LISTED HAS AN ACTIVE OFFER 
+                if !prev_offer.is_none() {
+                    //WERE FOUNEDED A PREV BID
+                    new_event.old_bidder_account_id=Some(prev_offer.clone().unwrap().buyer_id);
+
                 //aassert the amount is more than the actual bid
-                assert!(
-                    bid_amount.clone()> u128::from(prev_offer.as_ref().unwrap().price),
-                    "The new bid must more than the current bid price: {:?}",
-                    u128::from(prev_offer.clone().as_ref().unwrap().price)
-                );
+                assert!(bid_amount.clone()> u128::from(prev_offer.as_ref().unwrap().price),
+                    "The new bid must more than the current bid price: {:?}", u128::from(prev_offer.clone().as_ref().unwrap().price) );
                 // //assert that the bidder isnot the previous one
                 // env::log_str(&bidder_id.clone().to_string());
                 // env::log_str(&prev_offer.as_ref().unwrap().buyer_id.to_string());
 
-                assert!(
-                    bidder_id.clone()!=prev_offer.as_ref().unwrap().buyer_id,
-                    "You can not add a new bid having one active"
-                );
+                assert!(bidder_id.clone()!=prev_offer.as_ref().unwrap().buyer_id,
+                    "You can not add a new bid having one active" );
                     //refound the bid to the bidder
                     Promise::new(prev_offer.clone().unwrap().buyer_id).transfer(u128::from(prev_offer.as_ref().unwrap().price));
                     //create a new offer structure
                     let newoffer = Offers {
+                            token_id: token_id.clone() ,
+                            nft_contract_id: nft_contract_id.clone().into() ,
+                            owner_id:  owner_id.clone()  ,
+                            buyer_id: bidder_id.clone() ,
+                            approval_id: 0 ,
+                            price:  bid_amount.into(),
+                            ft_token_id: None,};
+
+                    //save the offer to the contract_
+                    self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
+                
+                // THIS WILL THROW A EVENT TO NOTIFY THAT THE NFT ISTN LISTED AS SALE BUT HAS A OLD BID,A NEW HIGHEST BID AND SHOULD BE 
+                //NOTIFIED THAT 
+                // > THE ONWER HAS A NEW OFFER 
+                // > THE OLD BIDDER HAS BEEN SURPASSED AND HE GOT HIS BID
+                // > THE NEW BIDDER IS SETTED AS THE HIGHEST BIDDER
+                // THROW THE  OFFER ASYNC WITH PREV OFFER
+
+                    Contract::event_add_offer(new_event); 
+
+            }else{
+             //IF THE NFT NOT LISTED DOESNT HAS AN ACTIVE OFFER 
+
+                 //create a new offer structure
+                 let newoffer = Offers {
                         token_id: token_id.clone() ,
                         nft_contract_id: nft_contract_id.clone().into() ,
                         owner_id:  owner_id.clone()  ,
                         buyer_id: bidder_id.clone() ,
                         approval_id: 0 ,
                         price:  bid_amount.into(),
-                        ft_token_id: None,
-
-                    };
-                    //save the offer to the contract_
+                        ft_token_id: None,};
+                //save the offer to the contract_
                     self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
 
-                    env::log_str(
-                        &json!({
-                        "type": "place_a_non_empty_offer",
-                        "params": newoffer 
-                    })
-                            .to_string(),
-                    );
-
-            }else{
-               // env::log_str("we havent found a prev bid ");
-
-                 //create a new offer structure
-                 let newoffer = Offers {
-                    token_id: token_id.clone() ,
-                    nft_contract_id: nft_contract_id.clone().into() ,
-                    owner_id:  owner_id.clone()  ,
-                    buyer_id: bidder_id.clone() ,
-                    approval_id: 0 ,
-                    price:  bid_amount.into(),
-                    ft_token_id: None,
-
-                };
-                //save the offer to the contract_
-                self.add_offer_to_state(owner_id.clone() ,bidder_id.clone(),nft_contract_id.clone(),token_id.clone(),newoffer.clone());
-
-                env::log_str(
-                    &json!({
-                    "type": "place_a_empty_offer",
-                    "params": newoffer 
-                })
-                        .to_string(),
-                );
-
+                // THIS WILL THROW A EVENT TO NOTIFY THAT THE NFT ISTN LISTED AS SALE BUT HAS A OLD BID,A NEW HIGHEST BID AND SHOULD BE 
+                //NOTIFIED THAT 
+                // > THE ONWER HAS A NEW OFFER 
+                // > THE NEW BIDDER IS SETTED AS THE HIGHEST BIDDER
+                // THROW THE  OFFER ASYNC WITH PREV OFFER
+                 Contract::event_add_offer(new_event); 
             }
 
-          
-
+ 
         }
              
     }
@@ -268,22 +260,31 @@ impl Contract {
           
        
         //refund
-        Promise::new(offer.clone().buyer_id).transfer(offer.clone().price.0);
+        Promise::new(offer.clone().buyer_id.clone()).transfer(offer.clone().price.0);
         //erase bid
         self.internal_remove_offer(nft_contract_id.clone(),token_id.clone());
 
-        env::log_str(
-            &json!({
-                "type": "delete_offer",
-                "params": {
-                    "nft_contract_id": offer.clone().nft_contract_id,
-                    "buyer_id": offer.clone().buyer_id,
-                    "token_id": offer.clone().token_id,
+        let del_offer = DeleteOffer {
+              current_owner_id:offer.clone().owner_id.clone(),
+              current_bidder_id:offer.clone().buyer_id.clone(),
+              nft_contract_id: nft_contract_id.clone(),
+              token_id: token_id.clone(),    
+              deleted_time:env::block_timestamp(),
+        
+        } ;
+        Contract::event_delete_offer(del_offer);
+        // env::log_str(
+        //     &json!({
+        //         "type": "delete_offer",
+        //         "params": {
+        //             "nft_contract_id": offer.clone().nft_contract_id,
+        //             "buyer_id": offer.clone().buyer_id,
+        //             "token_id": offer.clone().token_id,
                      
-                }
-            })
-            .to_string(),
-        );
+        //         }
+        //     })
+        //     .to_string(),
+        // );
     }
     #[private]
     #[payable]
@@ -311,29 +312,22 @@ impl Contract {
                   //remove from the sales 
                      
                   self.internal_remove_offer(nft_contract_id.clone(),token_id.clone());
-                  //and process the purchase
-                      self.process_purchase(
-                        AccountId::new_unchecked(market_data.clone().nft_contract_id),
-                            token_id.clone(),
-                            market_data.clone().price,  //   selected_bid.price.clone().0.into(),
-                            market_data.clone().buyer_id,
-                        );  
-            
+                  
                         
-                        env::log_str(
-                            &json!({
-                            "type": "process_bid",
-                            "params": {
-                                "old_owner_id": old_owner.clone(),
-                                "new_owner_id": caller,
-                                "nft_contract_id": nft_contract_id,
-                                "token_id": token_id,
-                                "price": market_data.clone().price,
+                        // env::log_str(
+                        //     &json!({
+                        //     "type": "process_bid",
+                        //     "params": {
+                        //         "old_owner_id": old_owner.clone(),
+                        //         "new_owner_id": caller,
+                        //         "nft_contract_id": nft_contract_id,
+                        //         "token_id": token_id,
+                        //         "price": market_data.clone().price,
                               
-                            }
-                        })
-                                .to_string(),
-                        );
+                        //     }
+                        // })
+                        //         .to_string(),
+                        // );
           
                         if self.is_mining_ntv_enabled {
 
@@ -361,7 +355,16 @@ impl Contract {
                             env::log_str("the nvt token minting is disabled");      
                           }
          
-           
+           //and process the purchase
+           self.process_purchase(
+            market_data.clone().nft_contract_id,
+            //AccountId::new_unchecked(market_data.clone().nft_contract_id),
+                token_id.clone(),
+                market_data.clone().price,  //   selected_bid.price.clone().0.into(),
+                market_data.clone().buyer_id,
+                "offer_sync".to_string(),
+            );  
+
    
         }
 
