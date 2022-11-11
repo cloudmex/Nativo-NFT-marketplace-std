@@ -3,9 +3,10 @@
 
 ## Prepare the ENV
 ### Last Dev
-` export CONTRACT="dev-1664228873834-30077831629755" `
+` export CONTRACT="dev-1667958216740-89040802063606" `
 ### Sub account
 ` export CONTRACT="events.nativo-market.testnet"         `
+` export CONTRACT="v4.nativo-market.testnet"         `
 
 ### Compile and make a contract devdeploy run:
 ` ./build_develop.sh  `
@@ -93,7 +94,7 @@
 `near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
 
 ### list as sales 
-`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"93","account_id":"dev-1664228873834-30077831629755","msg":"{\"market_type\":\"on_sale\",\"price\":\"7000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo_test.testnet --deposit 0.1 --gas=300000000000000 `
+`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"93","account_id":"dev-1664228873834-30077831629755","msg":"{\"market_type\":\"on_sale\",\"price\":\"7000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1 --gas=300000000000000 `
 
 
 ## Offer for a token
@@ -124,4 +125,23 @@
 
 
 
+ Se llama este metodo para saber el numero de nft que tiene el owner
+` near call   minterv2.nativo-minter.testnet  nft_supply_for_owner '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet `
 
+Este metodo sera llamado para resolver la promesa y opbtner el numero que retorne el metodo anterior
+
+near call   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"dokxo.testnet","from_index":"2","limit":1}' --accountId dokxo.testnet 
+  near view   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"dokxo.testnet","from_index":"2","limit":1}'
+
+
+near call $CONTRACT add_token_to_collection_xcc '{"contract_id": "minterv2.nativo-minter.testnet","token_id": "117","title":"another euye","description":"Eye description collection","media":"QmQXsyzx2c74EWo2asppe3G9N8BY2EeYNenqJZqPHMfx8q","collection_id":79}' --accountId dokxo.testnet --depositYocto 1 --gas=300000000000000
+
+
+
+near view   minterv2.nativo-minter.testnet  nft_last_token_id_for_owner '{"account_id":"joehank.testnet"}'  
+
+near view   minterv2.nativo-minter.testnet  nft_supply_for_owner '{"account_id":"joehank.testnet"}'  
+
+
+  near view   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"joehank.testnet","from_index":"2","limit":1}'
+  near view   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"joehank.testnet","from_index":"5","limit":1}'

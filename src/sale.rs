@@ -201,7 +201,7 @@ impl Contract {
                     env::log_str("the nvt token minting is disabled");      
                   }
                  
-        env::log_str("process_purchase out");
+       
          //process the purchase (which will remove the sale, transfer and get the payout from the nft contract, and then distribute royalties) 
          self.process_purchase(
             contract_id.clone().to_string(),
@@ -237,7 +237,7 @@ impl Contract {
         buyer_id: AccountId,
         p_type:String,
     ) -> Promise {
-        env::log_str("process_purchase in");
+       
 
         //get the sale object by removing the sale
         let sale = self.internal_remove_sale(AccountId::try_from( nft_contract_id.clone( ) ).unwrap() , token_id.clone());
@@ -254,13 +254,17 @@ impl Contract {
             new_owner_id:buyer_id.clone(),
             nft_contract_id: AccountId::try_from( sale.clone().nft_contract_id ).unwrap()  ,
             token_id: sale.clone().token_id,
-            price_sold: sale.clone().price,
+            price_sold: price.clone(),
             sold_time:env::block_timestamp(),
             _type:Some(p_type),
             _payouts:None,
 
         };
 
+
+        //resolve_purchase._payouts=Some(payout_list);
+        
+      //  Contract::event_resolve_purchase(resolve_data.clone());
         //initiate a cross contract call to the nft contract. This will transfer the token to the buyer and return
         //a payout object used for the market to distribute funds to the appropriate accounts.
         ext_contract::nft_transfer_payout(
@@ -301,8 +305,7 @@ impl Contract {
     ) -> U128 {
 
       
-
-        let mut resolve_purchase=_resolve_purchase.clone();
+         let mut resolve_purchase=_resolve_purchase.clone();
         let price = resolve_purchase.clone().price_sold;
         let buyer_id =resolve_purchase.clone().new_owner_id;
         let owner_id=resolve_purchase.clone().old_owner_id;
@@ -361,10 +364,16 @@ impl Contract {
         };
 
         let mut payout_list = HashMap::new();
+        let mut payout_roy = HashMap::new();
+
+        
+        let mut royalties_log:HashMap<String,HashMap<AccountId,U128>>=HashMap::new();
 
          // NEAR payouts
          for (receiver_id, amount) in payout {
             if receiver_id.eq(&owner_id){
+                 
+
                 //I charge the commission first
                 let fee_percent:f64= self.fee_percent;
                  
@@ -374,29 +383,38 @@ impl Contract {
                 let owner_payment =amount.0 -nativo_fee as u128;
 
                 //Treasury
-                payout_list.insert(self.treasure_id.clone(), nativo_fee.clone().to_string());
+                payout_list.insert(self.treasure_id.clone(), (nativo_fee.clone() as u128).into());
                  //we retrive the fee 
                 Promise::new(self.treasure_id.clone()).transfer(nativo_fee as u128); 
-
+                royalties_log.insert((&"treasury_fee").to_string(), payout_list.clone());
+                payout_list.clear();
                 // and then transfer the remainder
                 //Owner
-                payout_list.insert(owner_id.clone(), owner_payment.clone().to_string() );
+                
+               
+
+                payout_list.insert(owner_id.clone(), U128(owner_payment.clone()) );
+                royalties_log.insert((&"old_owner").to_string(), payout_list.clone());
+                payout_list.clear();
+                
                  Promise::new(owner_id.clone()).transfer(owner_payment);
 
 
             }
             else{
-                payout_list.insert(receiver_id.clone(), amount.clone().0.to_string());
-
+                payout_roy.insert(receiver_id.clone(), U128(amount.clone().0));
+              
                 Promise::new(receiver_id).transfer(amount.0);
             }
 
             
             
         }
+        royalties_log.insert((&"royalty").to_string(), payout_roy.clone());
+        resolve_purchase._payouts=Some(royalties_log.clone());
+        //env::log_str(&format!("payout : {:?}",royalties_log));
+       // Contract::event_royalties_purchase(royalties_log);
 
-        resolve_purchase._payouts=Some(payout_list);
-        
         Contract::event_resolve_purchase(resolve_purchase);
 
         //return the price payout out

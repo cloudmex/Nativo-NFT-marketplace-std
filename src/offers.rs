@@ -62,7 +62,7 @@ impl Contract {
         if !market_data.is_none() {
             //OFERT SYNC WILL BE ADDED
 
-            new_event._type=Some("offer_sync".to_string());
+            new_event._type=Some("add_offer_sync".to_string());
          
             //LOOK IF THE SALE HAS A PREV BID SYNC  
             let   prev_offer:Option<Offers>= self.offers.get(&contract_and_token_id.clone());
@@ -362,7 +362,7 @@ impl Contract {
                 token_id.clone(),
                 market_data.clone().price,  //   selected_bid.price.clone().0.into(),
                 market_data.clone().buyer_id,
-                "offer_sync".to_string(),
+                "accept_offer_async".to_string(),
             );  
 
    

@@ -67,6 +67,68 @@ pub struct OfferOutMarket {
     pub price: u128,
 }
 
+
+
+//aqui van los nombres de los metodos que mandaremos llamar
+#[ext_contract(ext_nft)]
+pub trait ExternsContract {
+  
+    fn nft_supply_for_owner (& self,account_id:AccountId) -> String;
+    fn nft_tokens_for_owner (& self,account_id:AccountId,from_index:String,limit:u8) ;
+
+    fn nft_last_token_for_creator(& self,account_id:AccountId) -> String;
+
+
+    fn get_owner_supply(&self,contract_id: AccountId,
+        owner_id: AccountId,
+       
+        collection_id:u64) -> String;
+
+    fn get_owner_last_token(&self,_contract_id: AccountId,
+        _title:String,
+        _description:String,
+        _media:String,
+        _collection_id:String) -> String;
+        
+ }
+
+
+
+#[derive(Serialize, Deserialize,Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct JsonToken {
+    //token ID
+    pub token_id: TokenId,
+    //owner of the token
+    pub owner_id: AccountId,
+    //token metadata
+    pub metadata: TokenMetadata,
+    //creator of the token
+    pub creator_id: Option <AccountId>,
+    //list of approved account IDs that have access to transfer the token. This maps an account ID to an approval ID
+    pub approved_account_ids: HashMap<AccountId, u64>,
+    //keep track of the royalty percentages for the token in a hash map
+    
+    pub royalty: Option< HashMap<AccountId, u32> >,
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct TokenMetadata {
+    pub title: Option<String>, // ex. "Arch Nemesis: Mail Carrier" or "Parcel #5055"
+    pub description: Option<String>, // free-form description
+    pub media: Option<String>, // URL to associated media, preferably to decentralized, content-addressed storage
+    pub media_hash: Option<String>, // Base64-encoded sha256 hash of content referenced by the `media` field. Required if `media` is included.
+    pub copies: Option<u64>, // number of copies of this set of metadata in existence when token was minted.
+    pub issued_at: Option<String>, // When token was issued or minted, Unix epoch in milliseconds
+    pub expires_at: Option<u64>, // When token expires, Unix epoch in milliseconds
+    pub starts_at: Option<u64>, // When token starts being valid, Unix epoch in milliseconds
+    pub updated_at: Option<u64>, // When token was last updated, Unix epoch in milliseconds
+    pub extra: Option<String>, // anything extra the NFT wants to store on-chain. Can be stringified JSON.
+    pub reference: Option<String>, // URL to an off-chain JSON file with more info.
+    pub reference_hash: Option<String>, // Base64-encoded sha256 hash of JSON from reference field. Required if `reference` is included.
+}
+ 
 //main contract struct to store all the information
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -349,8 +411,8 @@ impl Contract {
     
        }
 
-       #[payable]
-       pub fn add_token_to_collection(&mut self, 
+    #[payable]
+    pub fn add_token_to_collection(&mut self, 
            contract_id: AccountId,
            owner_id: AccountId,
            token_id: TokenId,
@@ -396,8 +458,26 @@ impl Contract {
    
    
        }
-       #[payable]
-       pub fn add_new_user_collection(&mut self,
+      
+
+   // #[payable]
+    pub fn add_token_to_collection_xcc(&mut self, contract_id: AccountId,title:String,description:String,media:String,collection_id:String) {
+        //asserting values from the caller       
+     //   assert_one_yocto();   
+        assert!(contract_id.clone().to_string() != "","the contract_id is null ");
+        assert!(title.clone().to_string() != "","the title is null ");
+        assert!(description.clone().to_string() != "","the description is null ");
+        assert!(media.clone().to_string() != "","the media is null ");
+        assert!(collection_id.clone().to_string() != "","the collection_id is null ");
+        //Making a XCC to the minter to get the last token id
+        ext_nft::nft_last_token_for_creator(env::signer_account_id(),contract_id.clone(),0,Gas(15_000_000_000_000),) 
+        //resilving the result from the minter
+        .then(ext_nft::get_owner_last_token(contract_id,title,description,media,collection_id,env::current_account_id(),0,Gas(15_000_000_000_000),));
+       }
+      
+      
+    #[payable]
+    pub fn add_new_user_collection(&mut self,
            title:String,
            description:String,
            media_icon:String,
@@ -489,6 +569,56 @@ impl Contract {
             None
         }
     }
+
+
+  
+
+// Método de procesamiento para promesa
+pub fn get_owner_last_token(&mut self ,_contract_id: AccountId,_title:String,_description:String,_media:String,_collection_id:String) {
+         
+    assert_eq!(env::promise_results_count(),1,"This is a callbacl module");
+    
+    match env::promise_result(0) {
+        PromiseResult::NotReady => unreachable!(),
+        PromiseResult::Failed => { env::log_str( &"the external contract failed".to_string());  }
+        PromiseResult::Successful(result) => {
+            let value = std::str::from_utf8(&result).unwrap();
+            let last_token_id: String = near_sdk::serde_json::from_str(&value).unwrap();
+ 
+           env::log_str(
+            &json!({
+            "type": "new_collection",
+            "params": {
+                "contract_id": _contract_id,
+                "owner_id": env::signer_account_id(),
+                "token_id":last_token_id,
+                "price": "0".to_string(),
+                "title":_title,
+                "description": _description,
+                "media": _media,
+                "creator":env::signer_account_id(),
+                "approval_id":"0",
+                "collection_id":_collection_id,
+            }
+        }).to_string(),);
+            
+        }
+    }
+}
+
+  
+
+
+
+//··········
+
+
+
+
+
+
+
+
 
 
 

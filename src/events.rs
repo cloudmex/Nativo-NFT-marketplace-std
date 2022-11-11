@@ -16,7 +16,7 @@ pub struct ResolvePurchase {
     pub price_sold: U128,
     pub sold_time:BlockHeight,
     pub _type:Option<String>,
-    pub _payouts:Option<HashMap<AccountId,String>>
+    pub _payouts:Option<HashMap<String,HashMap<AccountId,U128>>>
 } 
 #[derive(Serialize, Deserialize,Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -121,7 +121,20 @@ impl Contract {
         env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),
         );
     }
-        // this event notify a NFT purchase 
+    
+    pub fn event_royalties_purchase( data:HashMap<String,HashMap<AccountId,U128>>){
+        //format the info
+        let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "royalties_payment".to_string() ,
+                "data":data,
+        }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),
+        );
+    }
+    // this event notify a NFT purchase 
     pub fn event_resolve_purchase( data:ResolvePurchase){
         //format the info
         let formated_content=&json!({   
