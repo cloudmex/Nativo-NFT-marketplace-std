@@ -123,25 +123,3 @@
 
 
 
-
-
- Se llama este metodo para saber el numero de nft que tiene el owner
-` near call   minterv2.nativo-minter.testnet  nft_supply_for_owner '{"account_id":"dokxo.testnet"}' --accountId dokxo.testnet `
-
-Este metodo sera llamado para resolver la promesa y opbtner el numero que retorne el metodo anterior
-
-near call   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"dokxo.testnet","from_index":"2","limit":1}' --accountId dokxo.testnet 
-  near view   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"dokxo.testnet","from_index":"2","limit":1}'
-
-
-near call $CONTRACT add_token_to_collection_xcc '{"contract_id": "minterv2.nativo-minter.testnet","token_id": "117","title":"another euye","description":"Eye description collection","media":"QmQXsyzx2c74EWo2asppe3G9N8BY2EeYNenqJZqPHMfx8q","collection_id":79}' --accountId dokxo.testnet --depositYocto 1 --gas=300000000000000
-
-
-
-near view   minterv2.nativo-minter.testnet  nft_last_token_id_for_owner '{"account_id":"joehank.testnet"}'  
-
-near view   minterv2.nativo-minter.testnet  nft_supply_for_owner '{"account_id":"joehank.testnet"}'  
-
-
-  near view   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"joehank.testnet","from_index":"2","limit":1}'
-  near view   minterv2.nativo-minter.testnet  nft_tokens_for_owner '{"account_id":"joehank.testnet","from_index":"5","limit":1}'

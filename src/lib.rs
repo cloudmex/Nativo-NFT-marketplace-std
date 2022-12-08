@@ -483,6 +483,8 @@ impl Contract {
            media_icon:String,
            media_banner:String,
            visibility:bool,
+           twitter: String,
+           website: String,
            _type:String,
            _id:String){
                assert_one_yocto();
@@ -495,6 +497,8 @@ impl Contract {
                assert!(description.clone().to_string() != "","the description is null ");
                assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
                assert!(media_banner.clone().to_string() != "","the media_banner is null ");
+               assert!(twitter.clone().to_string() != "","the twitter is null ");
+               assert!(website.clone().to_string() != "","the website is null ");
                
                 if _type == "create" {
                     env::log_str(
@@ -506,6 +510,8 @@ impl Contract {
                             "description":description,
                             "media_icon": media_icon,
                             "media_banner": media_banner,
+                            "twitter": twitter,
+                            "website": website,
                             "collection_id":current_collection_id,
                             "visibility":visibility,
                                  }
@@ -524,6 +530,8 @@ impl Contract {
                             "description":description,
                             "media_icon": media_icon,
                             "media_banner": media_banner,
+                            "twitter": twitter,
+                            "website": website,
                             "collection_id":_id.parse::<u64>().unwrap() ,
                             "visibility":visibility,
                                  }
