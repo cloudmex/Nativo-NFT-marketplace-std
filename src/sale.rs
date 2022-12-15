@@ -2,7 +2,7 @@ use crate::*;
 use near_sdk::promise_result_as_success;
 use std::convert::TryInto;
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone,Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Bid {
     pub bidder_id: AccountId,
@@ -19,7 +19,7 @@ pub trait ExternsContract {
     fn reward_player(&self,player_owner_id: String,tokens_mint: String) -> String;
 }
 //struct that holds important information about each sale on the market
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize,Clone,Debug)]
 #[serde(crate = "near_sdk::serde")]
 
 pub struct Sale {
@@ -165,18 +165,13 @@ impl Contract {
 
         // if the token have a bid update the owner
         if if_offer.token_id!="null".to_string() {
+            env::log_str("an offer was founded");
             //set the new owner
             if_offer.owner_id=buyer_id.clone();
             //save the new data
             self.offers.insert(&contract_and_token_id.clone(),&if_offer);    
             }
-        //process the purchase (which will remove the sale, transfer and get the payout from the nft contract, and then distribute royalties) 
-        self.process_purchase(
-            contract_id.clone(),
-            token_id.clone(),
-            U128(deposit),
-            buyer_id.clone(),
-        );
+       
 
         //go to the ntv ft to pay 
         //let stt ="Tokens a minar".to_string() + &(deposit.clone()*1000000000000000000000000).to_string();
@@ -205,20 +200,30 @@ impl Contract {
                 }else{
                     env::log_str("the nvt token minting is disabled");      
                   }
-        env::log_str(
-            &json!({
-            "type": "offer",
-            "params": {
-                "old_owner_id": sale.clone().owner_id,
-                "new_owner_id": buyer_id,
-                "nft_contract_id": contract_id,
-                "token_id": token_id,
-                "price": price.to_string(),
-              
-            }
-        })
-                .to_string(),
+                 
+       
+         //process the purchase (which will remove the sale, transfer and get the payout from the nft contract, and then distribute royalties) 
+         self.process_purchase(
+            contract_id.clone().to_string(),
+            token_id.clone(),
+            U128(deposit),
+            buyer_id.clone(),
+            "sale".to_string(),
         );
+        // env::log_str(
+        //     &json!({
+        //     "type": "offer",
+        //     "params": {
+        //         "old_owner_id": sale.clone().owner_id,
+        //         "new_owner_id": buyer_id,
+        //         "nft_contract_id": contract_id,
+        //         "token_id": token_id,
+        //         "price": price.to_string(),
+              
+        //     }
+        // })
+        //         .to_string(),
+        // );
     }
 
     //private function used when a sale is purchased. 
@@ -226,19 +231,40 @@ impl Contract {
     #[private]
     pub fn process_purchase(
         &mut self,
-        nft_contract_id: AccountId,
+        nft_contract_id: String,
         token_id: String,
         price: U128,
         buyer_id: AccountId,
+        p_type:String,
     ) -> Promise {
-        //get the sale object by removing the sale
-        let sale = self.internal_remove_sale(nft_contract_id.clone(), token_id.clone());
-
-        //pay the fee comision
-        let amount_to_pay  = self.pay_the_market_fee(price);
        
-        
 
+        //get the sale object by removing the sale
+        let sale = self.internal_remove_sale(AccountId::try_from( nft_contract_id.clone( ) ).unwrap() , token_id.clone());
+         //pay the fee comision
+       
+
+      //  let amount_to_pay  = self.pay_the_market_fee(price); //moved at the resolve_process
+       
+        //fill the resolve output struct
+
+        let resolve_data= ResolvePurchase{
+           
+            old_owner_id:sale.clone().owner_id,
+            new_owner_id:buyer_id.clone(),
+            nft_contract_id: AccountId::try_from( sale.clone().nft_contract_id ).unwrap()  ,
+            token_id: sale.clone().token_id,
+            price_sold: price.clone(),
+            sold_time:env::block_timestamp(),
+            _type:Some(p_type),
+            _payouts:None,
+
+        };
+
+
+        //resolve_purchase._payouts=Some(payout_list);
+        
+      //  Contract::event_resolve_purchase(resolve_data.clone());
         //initiate a cross contract call to the nft contract. This will transfer the token to the buyer and return
         //a payout object used for the market to distribute funds to the appropriate accounts.
         ext_contract::nft_transfer_payout(
@@ -250,17 +276,17 @@ impl Contract {
                 the price that the token was purchased for. This will be used in conjunction with the royalty percentages
                 for the token in order to determine how much money should go to which account. 
             */
-            amount_to_pay,
+            price,
 			10, //the maximum amount of accounts the market can payout at once (this is limited by GAS)
-            nft_contract_id, //contract to initiate the cross contract call to
+            AccountId::try_from( nft_contract_id ).unwrap(), //contract to initiate the cross contract call to
             1, //yoctoNEAR to attach to the call
             GAS_FOR_NFT_TRANSFER, //GAS to attach to the call
         )
         //after the transfer payout has been initiated, we resolve the promise by calling our own resolve_purchase function. 
         //resolve purchase will take the payout object returned from the nft_transfer_payout and actually pay the accounts
         .then(ext_self::resolve_purchase(
-            buyer_id, //the buyer and price are passed in incase something goes wrong and we need to refund the buyer
-            amount_to_pay,
+             //the buyer and price are passed in incase something goes wrong and we need to refund the buyer
+            resolve_data,
             env::current_account_id(), //we are invoking this function on the current contract
             NO_DEPOSIT, //don't attach any deposit
             GAS_FOR_ROYALTIES, //GAS attached to the call to payout royalties
@@ -275,60 +301,121 @@ impl Contract {
     #[private]
     pub fn resolve_purchase(
         &mut self,
-        buyer_id: AccountId,
-        price: U128,
+        _resolve_purchase: ResolvePurchase,
     ) -> U128 {
-        // checking for payout information returned from the nft_transfer_payout method
-        let payout_option = promise_result_as_success().and_then(|value| {
-            //if we set the payout_option to None, that means something went wrong and we should refund the buyer
-            near_sdk::serde_json::from_slice::<Payout>(&value)
-                //converts the result to an optional value
-                .ok()
-                //returns None if the none. Otherwise executes the following logic
-                .and_then(|payout_object| {
-                    //we'll check if length of the payout object is > 10 or it's empty. In either case, we return None
-                    if payout_object.payout.len() > 10 || payout_object.payout.is_empty() {
-                      //  env::log_str("Cannot have more than 10 royalties");
-                        None
-                    
-                    //if the payout object is the correct length, we move forward
-                    } else {
-                        //we'll keep track of how much the nft contract wants us to payout. Starting at the full price payed by the buyer
-                        let mut remainder = price.0;
-                        
-                        //loop through the payout and subtract the values from the remainder. 
-                        for &value in payout_object.payout.values() {
-                            //checked sub checks for overflow or any errors and returns None if there are problems
-                            remainder = remainder.checked_sub(value.0)?;
-                        }
-                        //Check to see if the NFT contract sent back a faulty payout that requires us to pay more or too little. 
-                        //The remainder will be 0 if the payout summed to the total price. The remainder will be 1 if the royalties
-                        //we something like 3333 + 3333 + 3333. 
-                        if remainder == 0 || remainder == 1 {
-                            //set the payout_option to be the payout because nothing went wrong
-                            Some(payout_object.payout)
-                        } else {
-                            //if the remainder was anything but 1 or 0, we return None
-                            None
-                        }
-                    }
-                })
-        });
 
+      
+         let mut resolve_purchase=_resolve_purchase.clone();
+        let price = resolve_purchase.clone().price_sold;
+        let buyer_id =resolve_purchase.clone().new_owner_id;
+        let owner_id=resolve_purchase.clone().old_owner_id;
+       // checking for payout information returned from the nft_transfer_payout method
+       let payout_option = promise_result_as_success().and_then(|value| {
+        //if we set the payout_option to None, that means something went wrong and we should refund the buyer
+        near_sdk::serde_json::from_slice::<Payout>(&value)
+            //converts the result to an optional value
+            .ok()
+            //returns None if the none. Otherwise executes the following logic
+            .and_then(|payout_object| {
+                //we'll check if length of the payout object is > 10 or it's empty. In either case, we return None
+                if payout_object.payout.len() > 10 || payout_object.payout.is_empty() {
+                  //  env::log_str("Cannot have more than 10 royalties");
+                    None
+                
+                //if the payout object is the correct length, we move forward
+                } else {
+                    //we'll keep track of how much the nft contract wants us to payout. Starting at the full price payed by the buyer
+                    let mut remainder = price.0;
+                  
+                    //loop through the payout and subtract the values from the remainder. 
+                    for &value in payout_object.payout.values() {
+                        
+
+                        //checked sub checks for overflow or any errors and returns None if there are problems
+                        remainder = remainder.checked_sub(value.0)?;
+                       
+                    }
+
+                    //Check to see if the NFT contract sent back a faulty payout that requires us to pay more or too little. 
+                    //The remainder will be 0 if the payout summed to the total price. The remainder will be 1 if the royalties
+                    //we something like 3333 + 3333 + 3333. 
+                    if remainder == 0 || remainder == 1 {
+                        //set the payout_option to be the payout because nothing went wrong
+                        Some(payout_object.payout)
+                    } else {
+                        //if the remainder was anything but 1 or 0, we return None
+                        None
+                    }
+                }
+            })
+    });
+
+        
         // if the payout option was some payout, we set this payout variable equal to that some payout
         let payout = if let Some(payout_option) = payout_option {
+            
             payout_option
         //if the payout option was None, we refund the buyer for the price they payed and return
         } else {
+             
             Promise::new(buyer_id).transfer(u128::from(price));
             // leave function and return the price that was refunded
             return price;
         };
 
-        // NEAR payouts
-        for (receiver_id, amount) in payout {
-            Promise::new(receiver_id).transfer(amount.0);
+        let mut payout_list = HashMap::new();
+        let mut payout_roy = HashMap::new();
+
+        
+        let mut royalties_log:HashMap<String,HashMap<AccountId,U128>>=HashMap::new();
+
+         // NEAR payouts
+         for (receiver_id, amount) in payout {
+            if receiver_id.eq(&owner_id){
+                 
+
+                //I charge the commission first
+                let fee_percent:f64= self.fee_percent;
+                 
+                //calculate the nativo fee from the total 
+                let nativo_fee =price.0 as f64 * fee_percent;
+                // substract the nativo fee to the owner revenue
+                let owner_payment =amount.0 -nativo_fee as u128;
+
+                //Treasury
+                payout_list.insert(self.treasure_id.clone(), (nativo_fee.clone() as u128).into());
+                 //we retrive the fee 
+                Promise::new(self.treasure_id.clone()).transfer(nativo_fee as u128); 
+                royalties_log.insert((&"treasury_fee").to_string(), payout_list.clone());
+                payout_list.clear();
+                // and then transfer the remainder
+                //Owner
+                
+               
+
+                payout_list.insert(owner_id.clone(), U128(owner_payment.clone()) );
+                royalties_log.insert((&"old_owner").to_string(), payout_list.clone());
+                payout_list.clear();
+                
+                 Promise::new(owner_id.clone()).transfer(owner_payment);
+
+
+            }
+            else{
+                payout_roy.insert(receiver_id.clone(), U128(amount.clone().0));
+              
+                Promise::new(receiver_id).transfer(amount.0);
+            }
+
+            
+            
         }
+        royalties_log.insert((&"royalty").to_string(), payout_roy.clone());
+        resolve_purchase._payouts=Some(royalties_log.clone());
+        //env::log_str(&format!("payout : {:?}",royalties_log));
+       // Contract::event_royalties_purchase(royalties_log);
+
+        Contract::event_resolve_purchase(resolve_purchase);
 
         //return the price payout out
         price
@@ -337,14 +424,9 @@ impl Contract {
     #[private]
     pub fn pay_the_market_fee(&self,price:U128) -> U128 {
         //send the comision to the treasury
-        let newprice: u128  = u128::try_from(price).unwrap();
+        let newprice: u128  = price.0;
         let commision = newprice as f64 * self.fee_percent;
-      //  env::log_str("comision");
-      //  env::log_str(&commision.to_string());
-      // let comisionu128 = commision as u128;
-      //  env::log_str("comision to pay");
-      //  env::log_str(&comisionu128.to_string());
-
+    
         Promise::new(self.treasure_id.clone()).transfer(commision as u128);
 
            
@@ -592,8 +674,7 @@ impl Contract {
         /*  Some(market_data.clone()).expect("The token does not exist or isnt listed"); */
 
         let caller = env::signer_account_id();
-        let old_owner=market_data.clone().owner_id;
-        // get the bid vec void or not
+         // get the bid vec void or not
         let   bids = market_data.clone().bids.unwrap_or(Vec::new());
         // keep the bid vec 
         let current_bid = &bids[bids.len() - 1];
@@ -609,27 +690,28 @@ impl Contract {
                     self.sales.insert(&contract_and_token_id, &market_data.clone());
                   //and process the purchase
                       self.process_purchase(
-                        AccountId::new_unchecked(market_data.clone().nft_contract_id),
+                            market_data.clone().nft_contract_id.into(),
                             token_id.clone(),
                             selected_bid.price.clone().0.into(),
                             selected_bid.bidder_id.clone(),
+                            "offer_async".to_string(),
                         );  
             
                         
-                        env::log_str(
-                            &json!({
-                            "type": "process_bid",
-                            "params": {
-                                "old_owner_id": old_owner,
-                                "new_owner_id": caller,
-                                "nft_contract_id": nft_contract_id,
-                                "token_id": token_id,
-                                "price": selected_bid.price.clone().0.to_string(),
+                        // env::log_str(
+                        //     &json!({
+                        //     "type": "process_bid",
+                        //     "params": {
+                        //         "old_owner_id": old_owner,
+                        //         "new_owner_id": caller,
+                        //         "nft_contract_id": nft_contract_id,
+                        //         "token_id": token_id,
+                        //         "price": selected_bid.price.clone().0.to_string(),
                               
-                            }
-                        })
-                                .to_string(),
-                        );
+                        //     }
+                        // })
+                        //         .to_string(),
+                        // );
             }//decline
             else {
           //      env::log_str("decline the offer");
@@ -710,7 +792,8 @@ impl Contract {
 trait ExtSelf {
     fn resolve_purchase(
         &mut self,
-        buyer_id: AccountId,
-        price: U128,
+        
+        _resolve_purchase: ResolvePurchase,
+       
     ) -> Promise;
 }

@@ -113,7 +113,7 @@ impl Contract {
             .map(|token_id| self.sales.get(&token_id.clone())
             .unwrap_or(Sale {
                 token_id: token_id.clone().to_string(),
-                nft_contract_id: "null".to_string(),
+                nft_contract_id: "null".to_string().try_into().unwrap(),
                 owner_id: "null".to_string().try_into().unwrap(),
                 buyer_id:Some("null".to_string().try_into().unwrap()),
                 creator_id: None,

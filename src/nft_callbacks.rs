@@ -121,10 +121,10 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
          //list a token as sale
         if market_type == "on_sale" {
          //insert the key value pair into the sales map. Key is the unique ID. value is the sale object
-          let newda = &Sale {
+          let newda = Sale {
             owner_id: owner_id.clone(), //owner of the sale / token
             approval_id:approval_id, //approval ID for that token that was given to the market
-            nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
+            nft_contract_id: nft_contract_id.clone().to_string(), //NFT contract the token was minted on
             token_id: token_id.clone(), //the actual token ID
             price:price,
             ft_token_id:None,
@@ -178,7 +178,9 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
             self.by_nft_contract_id
                 .insert(&nft_contract_id, &by_nft_contract_id);
 
-
+          //HERE MUST TRHOW  A EVENT JSON
+          Contract::event_list_as_sale(newda);
+          
         }
         
         //set a bid for token in the market 
@@ -191,7 +193,7 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
             let newda=&Sale {
                 owner_id: owner_id.clone(), //owner of the sale / token
                 approval_id:approval_id, //approval ID for that token that was given to the market
-                nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
+                nft_contract_id: nft_contract_id.clone().to_string(), //NFT contract the token was minted on
                 token_id: token_id.clone(), //the actual token ID
                 price:price,
                 ft_token_id:None,
@@ -271,7 +273,7 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
                 let newda = &Sale {
                     owner_id: owner_id.clone(), //owner of the sale / token
                     approval_id:approval_id, //approval ID for that token that was given to the market
-                    nft_contract_id: nft_contract_id.to_string(), //NFT contract the token was minted on
+                    nft_contract_id: nft_contract_id.clone().to_string(), //NFT contract the token was minted on
                     token_id: token_id.clone(), //the actual token ID
                     price:price,
                     ft_token_id:None,
