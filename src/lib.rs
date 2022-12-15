@@ -384,12 +384,14 @@ impl Contract {
     pub fn add_new_profile(& self,
         username:AccountId,
         media:String,
+        media_banner:Option<String>,
         biography:String,
         social_media:String,
         _type:String,
        ){
         assert!(username.clone().to_string() != "","the username is null ");
         assert!(media.clone().to_string() != "","the media is null ");
+       // assert!(media_banner.clone().to_string() != "","the media_banner is null ");
         assert!(biography.clone().to_string() != "","the biography is null ");
         assert!(social_media.clone().to_string() != "","the social_media is null ");
 
@@ -401,6 +403,7 @@ impl Contract {
                     "params": {
                         "username": username,
                         "media": media,
+                        "media_banner": if media_banner.is_some() {media_banner.unwrap()}else{ "".to_string()} ,
                         "biography": biography,
                         "social_media": social_media,
                     
@@ -483,8 +486,8 @@ impl Contract {
            media_icon:String,
            media_banner:String,
            visibility:bool,
-           twitter: String,
-           website: String,
+           twitter: Option<String>,
+           website: Option<String>,
            _type:String,
            _id:String){
                assert_one_yocto();
@@ -497,8 +500,8 @@ impl Contract {
                assert!(description.clone().to_string() != "","the description is null ");
                assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
                assert!(media_banner.clone().to_string() != "","the media_banner is null ");
-               assert!(twitter.clone().to_string() != "","the twitter is null ");
-               assert!(website.clone().to_string() != "","the website is null ");
+            //    assert!(twitter.clone().to_string() != "","the twitter is null ");
+            //    assert!(website.clone().to_string() != "","the website is null ");
                
                 if _type == "create" {
                     env::log_str(
@@ -510,8 +513,8 @@ impl Contract {
                             "description":description,
                             "media_icon": media_icon,
                             "media_banner": media_banner,
-                            "twitter": twitter,
-                            "website": website,
+                            "twitter": if twitter.is_some() {twitter.unwrap()}else{ "".to_string()} ,
+                            "website": if website.is_some() {website.unwrap()}else{ "".to_string()} ,
                             "collection_id":current_collection_id,
                             "visibility":visibility,
                                  }
