@@ -210,13 +210,21 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
                 &newda.clone(),
                 );
 
-                env::log_str(
-                    &json!({
-                    "type": "add_bid",
-                    "params": newda,
-                })
-                        .to_string(),
-                );
+                // env::log_str(
+                //     &json!({
+                //     "type": "add_bid",
+                //     "params": newda,
+                // })
+                //         .to_string(),
+                // );
+
+                Contract::event_std(
+                    "add_bid".to_string(),
+                    json!({
+                                "type": "add_bid".to_string(),
+                                "params":newda
+                                }).to_string()
+                    );
                 //get the sales by owner ID for the given owner. If there are none, we create a new empty set
                     let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
                     UnorderedSet::new(
@@ -388,6 +396,17 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
                 .to_string(),
         );
        
+        Contract::event_std(
+            "nft_on_revoke".to_string(),
+            json!({
+                        "type": "nft_on_revoke".to_string(),
+                        "params": {
+                                    "owner_id": owner_id , 
+                                    "nft_contract_id": nft_contract_id.to_string(), 
+                                    "token_id": token_id,  
+                                    }
+                        }).to_string()
+            );
       }
  
  

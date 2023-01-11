@@ -120,12 +120,25 @@ pub fn set_ntvtoken_contract_account(&mut self,new_account:AccountId) -> String 
         self.whitelist_contracts.insert(&address_contract.clone(), &new_ext_contract);
         let cont = self.whitelist_contracts.get(&address_contract.clone());
 
-        let js =format!("address_contract:{},owner_id:{},contract_name:{}",
-        address_contract,
-        cont.clone().unwrap().register_address,
-        cont.unwrap().contract_name);
+        // let js =format!("address_contract:{},owner_id:{},contract_name:{}",
+        // address_contract,
+        // cont.clone().unwrap().register_address,
+        // cont.unwrap().contract_name);
 
-        env::log_str(&js.to_string());
+       // env::log_str(&js.to_string());
+
+        Contract::event_std(
+            "add_new_ext_contract".to_string(),
+            json!({
+                        "type": "add_new_ext_contract".to_string(),
+                        "params": {
+                            "address_contract": address_contract,
+                            "owner_id": cont.clone().unwrap().register_address,
+                            "contract_name":cont.unwrap().contract_name,
+                            
+                                    }
+                        }).to_string()
+            );
          
     }
 

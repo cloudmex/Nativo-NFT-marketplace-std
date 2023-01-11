@@ -397,20 +397,35 @@ impl Contract {
 
         assert!(username.clone() == env::signer_account_id(),"the caller must be the same as the username sended");
            //this method just receive the info and throws a json log that will be readed by the graph
-                env::log_str(
-                    &json!({
-                    "type": _type,
-                    "params": {
-                        "username": username,
-                        "media": media,
-                        "media_banner": if media_banner.is_some() {media_banner.unwrap()}else{ "".to_string()} ,
-                        "biography": biography,
-                        "social_media": social_media,
+                // env::log_str(
+                //     &json!({
+                //     "type": _type,
+                //     "params": {
+                //         "username": username,
+                //         "media": media,
+                //         "media_banner": if media_banner.is_some() {media_banner.unwrap()}else{ "".to_string()} ,
+                //         "biography": biography,
+                //         "social_media": social_media,
                     
-                    }
-                })
-                        .to_string(),
-                );
+                //     }
+                // })
+                //         .to_string(),
+                // );
+
+                Contract::event_std(
+                    "create_edit_profile".to_string(),
+                    json!({
+                                    "type": _type,
+                                    "params": {
+                                                    "username": username,
+                                                    "media": media,
+                                                    "media_banner": if media_banner.is_some() {media_banner.unwrap()}else{ "".to_string()} ,
+                                                    "biography": biography,
+                                                    "social_media": social_media,
+                                                
+                                                }
+                                }).to_string()
+            );
     
        }
 
@@ -439,32 +454,49 @@ impl Contract {
    
            assert!(creator.clone() == env::signer_account_id(),"the caller must be the same as the creator sended");
    
-           env::log_str(
-               &json!({
-               "type": "new_collection",
-               "params": {
-                   "contract_id": contract_id,
-                   "owner_id": owner_id,
-                   "token_id":token_id,
-                   "price": price.to_string(),
-                   "title":title,
-                   "description": description,
-                   "media": media,
-                   "creator":creator,
-                   "approval_id":"0",
-                   "collection_id":collection_id,
-               }
-           })
-                   .to_string(),
-           );
+        //    env::log_str(
+        //        &json!({
+        //        "type": "add_token_to_collection",
+        //        "params": {
+        //            "contract_id": contract_id,
+        //            "owner_id": owner_id,
+        //            "token_id":token_id,
+        //            "price": price.to_string(),
+        //            "title":title,
+        //            "description": description,
+        //            "media": media,
+        //            "creator":creator,
+        //            "approval_id":"0",
+        //            "collection_id":collection_id,
+        //        }
+        //    })
+        //            .to_string(),
+        //    );
    
-   
+           Contract::event_std(
+            "add_token_to_collection".to_string(),
+            json!({
+                        "type": "add_token_to_collection".to_string(),
+                        "params":  {
+                                        "contract_id": contract_id,
+                                        "owner_id": owner_id,
+                                        "token_id":token_id,
+                                        "price": price.to_string(),
+                                        "title":title,
+                                        "description": description,
+                                        "media": media,
+                                        "creator":creator,
+                                        "approval_id":"0",
+                                        "collection_id":collection_id,
+                                    }
+                        }).to_string()
+            );
    
        }
       
 
-   // #[payable]
-    pub fn add_token_to_collection_xcc(&mut self, contract_id: AccountId,title:String,description:String,media:String,collection_id:String) {
+   // #[payable] i make this method private to see if is unnessesary and then can delete it savety
+     fn add_token_to_collection_xcc(&mut self, contract_id: AccountId,title:String,description:String,media:String,collection_id:String) {
         //asserting values from the caller       
      //   assert_one_yocto();   
         assert!(contract_id.clone().to_string() != "","the contract_id is null ");
@@ -504,42 +536,78 @@ impl Contract {
             //    assert!(website.clone().to_string() != "","the website is null ");
                
                 if _type == "create" {
-                    env::log_str(
-                        &json!({
-                        "type": _type,
-                        "params": {                   
-                            "owner_id": owner_id,
-                            "title":title,
-                            "description":description,
-                            "media_icon": media_icon,
-                            "media_banner": media_banner,
-                            "twitter": if twitter.is_some() {twitter.unwrap()}else{ "".to_string()} ,
-                            "website": if website.is_some() {website.unwrap()}else{ "".to_string()} ,
-                            "collection_id":current_collection_id,
-                            "visibility":visibility,
-                                 }
-                         }).to_string(),
-                    );
+                    // env::log_str(
+                    //     &json!({
+                    //     "type": _type,
+                    //     "params": {                   
+                    //         "owner_id": owner_id,
+                    //         "title":title,
+                    //         "description":description,
+                    //         "media_icon": media_icon,
+                    //         "media_banner": media_banner,
+                    //         "twitter": if twitter.is_some() {twitter.unwrap()}else{ "".to_string()} ,
+                    //         "website": if website.is_some() {website.unwrap()}else{ "".to_string()} ,
+                    //         "collection_id":current_collection_id,
+                    //         "visibility":visibility,
+                    //              }
+                    //      }).to_string(),
+                    // );
+
+                    Contract::event_std(
+                        "add_new_user_collection".to_string(),
+                        json!({
+                                    "type": _type,
+                                    "params": {                   
+                                        "owner_id": owner_id,
+                                        "title":title,
+                                        "description":description,
+                                        "media_icon": media_icon,
+                                        "media_banner": media_banner,
+                                        "twitter": if twitter.is_some() {twitter.unwrap()}else{ "".to_string()} ,
+                                        "website": if website.is_some() {website.unwrap()}else{ "".to_string()} ,
+                                        "collection_id":current_collection_id,
+                                        "visibility":visibility,
+                                                }
+                                    }).to_string()
+                        );
                     
                     self.collection_id+=1;
 
                 }else if _type =="edit"{
-                     env::log_str(
-                        &json!({
-                        "type": _type,
-                        "params": {                   
-                            "owner_id": owner_id,
-                            "title":title,
-                            "description":description,
-                            "media_icon": media_icon,
-                            "media_banner": media_banner,
-                            "twitter": twitter,
-                            "website": website,
-                            "collection_id":_id.parse::<u64>().unwrap() ,
-                            "visibility":visibility,
-                                 }
-                         }).to_string(),
-                    );
+                    //  env::log_str(
+                    //     &json!({
+                    //     "type": _type,
+                    //     "params": {                   
+                    //         "owner_id": owner_id,
+                    //         "title":title,
+                    //         "description":description,
+                    //         "media_icon": media_icon,
+                    //         "media_banner": media_banner,
+                    //         "twitter": twitter,
+                    //         "website": website,
+                    //         "collection_id":_id.parse::<u64>().unwrap() ,
+                    //         "visibility":visibility,
+                    //              }
+                    //      }).to_string(),
+                    // );
+
+                    Contract::event_std(
+                        "add_new_user_collection".to_string(),
+                        json!({
+                                    "type": _type,
+                                    "params": {                   
+                                        "owner_id": owner_id,
+                                        "title":title,
+                                        "description":description,
+                                        "media_icon": media_icon,
+                                        "media_banner": media_banner,
+                                        "twitter": twitter,
+                                        "website": website,
+                                        "collection_id":_id.parse::<u64>().unwrap() ,
+                                        "visibility":visibility,
+                                                }
+                                    }).to_string()
+                        );
                 }
               
    
@@ -596,22 +664,41 @@ pub fn get_owner_last_token(&mut self ,_contract_id: AccountId,_title:String,_de
             let value = std::str::from_utf8(&result).unwrap();
             let last_token_id: String = near_sdk::serde_json::from_str(&value).unwrap();
  
-           env::log_str(
-            &json!({
-            "type": "new_collection",
-            "params": {
-                "contract_id": _contract_id,
-                "owner_id": env::signer_account_id(),
-                "token_id":last_token_id,
-                "price": "0".to_string(),
-                "title":_title,
-                "description": _description,
-                "media": _media,
-                "creator":env::signer_account_id(),
-                "approval_id":"0",
-                "collection_id":_collection_id,
-            }
-        }).to_string(),);
+        //    env::log_str(
+        //     &json!({
+        //     "type": "new_collection",
+        //     "params": {
+        //         "contract_id": _contract_id,
+        //         "owner_id": env::signer_account_id(),
+        //         "token_id":last_token_id,
+        //         "price": "0".to_string(),
+        //         "title":_title,
+        //         "description": _description,
+        //         "media": _media,
+        //         "creator":env::signer_account_id(),
+        //         "approval_id":"0",
+        //         "collection_id":_collection_id,
+        //     }
+        // }).to_string(),);
+
+        Contract::event_std(
+            "new_collection".to_string(),
+            json!({
+                        "type": "new_collection".to_string(),
+                        "params": {
+                            "contract_id": _contract_id,
+                            "owner_id": env::signer_account_id(),
+                            "token_id":last_token_id,
+                            "price": "0".to_string(),
+                            "title":_title,
+                            "description": _description,
+                            "media": _media,
+                            "creator":env::signer_account_id(),
+                            "approval_id":"0",
+                            "collection_id":_collection_id,
+                                    }
+                        }).to_string()
+            );
             
         }
     }

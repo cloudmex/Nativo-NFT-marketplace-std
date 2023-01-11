@@ -71,19 +71,31 @@ impl Contract {
         //if this fails, the remove sale will revert
         assert_eq!(owner_id, sale.owner_id, "Must be sale owner");
 
-        env::log_str(
-            &json!({
-            "type": "remove_sale",
-            "params": {
-                "owner_id": owner_id.clone(),
-                "nft_contract_id": nft_contract_id.clone(),
-                "token_id": token_id.clone(),
+        // env::log_str(
+        //     &json!({
+        //     "type": "remove_sale",
+        //     "params": {
+        //         "owner_id": owner_id.clone(),
+        //         "nft_contract_id": nft_contract_id.clone(),
+        //         "token_id": token_id.clone(),
                
               
-            }
-        })
-                .to_string(),
-        );
+        //     }
+        // })
+        //         .to_string(),
+        // );
+
+        Contract::event_std(
+            "remove_sale".to_string(),
+            json!({
+                        "type": "remove_sale".to_string(),
+                        "params": {
+                                    "owner_id": owner_id.clone(),
+                                    "nft_contract_id": nft_contract_id.clone(),
+                                    "token_id": token_id.clone(),
+                                    }
+                        }).to_string()
+            );
     }
 
     //updates the price for a sale on the market
@@ -117,19 +129,32 @@ impl Contract {
         self.sales.insert(&contract_and_token_id, &sale.clone());
 
 
-        env::log_str(
-            &json!({
-            "type": "update_price",
-            "params": {
-                "owner_id": sale.owner_id,
-                "nft_contract_id": nft_contract_id,
-                "token_id": token_id,
-                "price": price,
+        // env::log_str(
+        //     &json!({
+        //     "type": "update_price",
+        //     "params": {
+        //         "owner_id": sale.owner_id,
+        //         "nft_contract_id": nft_contract_id,
+        //         "token_id": token_id,
+        //         "price": price,
               
-            }
-        })
-                .to_string(),
-        );
+        //     }
+        // })
+        //         .to_string(),
+        // );
+
+        Contract::event_std(
+            "update_price".to_string(),
+            json!({
+                        "type": "update_price".to_string(),
+                        "params": {
+                                    "owner_id": sale.owner_id,
+                                    "nft_contract_id": nft_contract_id,
+                                    "token_id": token_id,
+                                    "price": price,
+                                    }
+                        }).to_string()
+            );
     }
 
     //place an offer on a specific sale. The sale will go through as long as your deposit is greater than or equal to the list price
@@ -579,21 +604,34 @@ impl Contract {
             market_data.bids = Some(bids);
             self.sales.insert(&contract_and_token_id, &market_data.clone());
 
-            env::log_str(
-                &json!({
-                "type": "add_bid",
-                "params": {
-                    "owner_id": market_data.owner_id,
-                    "nft_contract_id": nft_contract_id,
-                    "token_id": token_id,
-                    "bidder_id": new_bid.bidder_id ,
-                    "bid_amount":new_bid.price
+            // env::log_str(
+            //     &json!({
+            //     "type": "add_bid",
+            //     "params": {
+            //         "owner_id": market_data.owner_id,
+            //         "nft_contract_id": nft_contract_id,
+            //         "token_id": token_id,
+            //         "bidder_id": new_bid.bidder_id ,
+            //         "bid_amount":new_bid.price
                   
-                }
-            })
-                    .to_string(),
-            );
+            //     }
+            // })
+            //         .to_string(),
+            // );
     
+            Contract::event_std(
+                "add_bid".to_string(),
+                json!({
+                            "type": "add_bid".to_string(),
+                            "params": {
+                                        "owner_id": market_data.owner_id,
+                                        "nft_contract_id": nft_contract_id,
+                                        "token_id": token_id,
+                                        "bidder_id": new_bid.bidder_id ,
+                                        "bid_amount":new_bid.price
+                                        }
+                            }).to_string()
+                );
         }//else the token as auction the bid must to be more than  start price
         else{
          //   env::log_str("was listed as auction");
@@ -637,20 +675,34 @@ impl Contract {
             bids.push(new_bid.clone());
             market_data.bids = Some(bids);
             self.sales.insert(&contract_and_token_id, &market_data);
-            env::log_str(
-                &json!({
-                "type": "add_bid",
-                "params": {
-                    "owner_id": market_data.owner_id,
-                    "nft_contract_id": nft_contract_id,
-                    "token_id": token_id,
-                    "bidder_id": new_bid.bidder_id ,
-                    "bid_amount":new_bid.price
+            // env::log_str(
+            //     &json!({
+            //     "type": "add_bid",
+            //     "params": {
+            //         "owner_id": market_data.owner_id,
+            //         "nft_contract_id": nft_contract_id,
+            //         "token_id": token_id,
+            //         "bidder_id": new_bid.bidder_id ,
+            //         "bid_amount":new_bid.price
                   
-                }
-            })
-                    .to_string(),
-            );
+            //     }
+            // })
+            //         .to_string(),
+            // );
+
+            Contract::event_std(
+                "add_bid".to_string(),
+                json!({
+                            "type": "add_bid".to_string(),
+                            "params": {
+                                        "owner_id": market_data.owner_id,
+                                        "nft_contract_id": nft_contract_id,
+                                        "token_id": token_id,
+                                        "bidder_id": new_bid.bidder_id ,
+                                        "bid_amount":new_bid.price
+                                        }
+                            }).to_string()
+                );
     
         }
         

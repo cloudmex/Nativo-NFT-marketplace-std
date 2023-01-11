@@ -47,7 +47,7 @@ impl Contract {
 
 
 
-    // fn event_log_string(event_type : String, data:String){
+    // fn event_std(event_type : String, data:String){
     //     //recieve info
     //     //format the info
 
@@ -66,6 +66,19 @@ impl Contract {
     //     );
     // }
 
+    // this event notify a new NFT listed as sale
+    pub fn event_std ( _event:String, data:String){
+        //format the info
+        let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": _event ,
+                "data":data
+        }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),
+        );
+    }
     // this event notify a new NFT listed as sale
     pub fn event_list_as_sale( data:Sale){
         //format the info
