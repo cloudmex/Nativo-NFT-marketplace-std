@@ -85,17 +85,33 @@ impl Contract {
         //         .to_string(),
         // );
 
-        Contract::event_std(
-            "remove_sale".to_string(),
-            json!({
-                        "type": "remove_sale".to_string(),
-                        "params": {
-                                    "owner_id": owner_id.clone(),
-                                    "nft_contract_id": nft_contract_id.clone(),
-                                    "token_id": token_id.clone(),
-                                    }
-                        }).to_string()
-            );
+        // Contract::event_std(
+        //     "remove_sale".to_string(),
+        //     json!({
+        //                 "type": "remove_sale".to_string(),
+        //                 "params": {
+        //                             "owner_id": owner_id.clone(),
+        //                             "nft_contract_id": nft_contract_id.clone(),
+        //                             "token_id": token_id.clone(),
+        //                             }
+        //                 }).to_string()
+        //     );
+
+            let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "remove_sale" ,
+                "data":{
+                    "type": "remove_sale".to_string(),
+                    "params":{
+                        "owner_id": owner_id.clone(),
+                        "nft_contract_id": nft_contract_id.clone(),
+                        "token_id": token_id.clone(),
+                        }
+                    }
+             }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),);
     }
 
     //updates the price for a sale on the market
@@ -143,18 +159,35 @@ impl Contract {
         //         .to_string(),
         // );
 
-        Contract::event_std(
-            "update_price".to_string(),
-            json!({
-                        "type": "update_price".to_string(),
-                        "params": {
-                                    "owner_id": sale.owner_id,
-                                    "nft_contract_id": nft_contract_id,
-                                    "token_id": token_id,
-                                    "price": price,
-                                    }
-                        }).to_string()
-            );
+        // Contract::event_std(
+        //     "update_price".to_string(),
+        //     json!({
+        //                 "type": "update_price".to_string(),
+        //                 "params": {
+        //                             "owner_id": sale.owner_id,
+        //                             "nft_contract_id": nft_contract_id,
+        //                             "token_id": token_id,
+        //                             "price": price,
+        //                             }
+        //                 }).to_string()
+        //     );
+
+            let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "update_price" ,
+                "data":{
+                    "type": "update_price".to_string(),
+                    "params":{
+                        "owner_id": sale.owner_id,
+                        "nft_contract_id": nft_contract_id,
+                        "token_id": token_id,
+                        "price": price,
+                        }
+                    }
+             }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),);
     }
 
     //place an offer on a specific sale. The sale will go through as long as your deposit is greater than or equal to the list price

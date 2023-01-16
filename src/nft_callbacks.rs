@@ -218,13 +218,26 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
                 //         .to_string(),
                 // );
 
-                Contract::event_std(
-                    "add_bid".to_string(),
-                    json!({
-                                "type": "add_bid".to_string(),
-                                "params":newda
-                                }).to_string()
-                    );
+                // Contract::event_std(
+                //     "add_bid".to_string(),
+                //     json!({
+                //                 "type": "add_bid".to_string(),
+                //                 "params":newda
+                //                 }).to_string()
+                //     );
+
+                    let formated_content=&json!({   
+                        "standard": "nep171",
+                        "version": "1.0.0",
+                        "event": "nft_on_approve" ,
+                        "data":{
+                            "type": "add_bid".to_string(),
+                            "params":newda
+                            }
+                     }).to_string(); 
+                //EMIT THE LOG
+                env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),);
+
                 //get the sales by owner ID for the given owner. If there are none, we create a new empty set
                     let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
                     UnorderedSet::new(
@@ -383,30 +396,26 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
           //get the sale object as the return value from removing the sale internally
         let _sale = self.internal_remove_sale(nft_contract_id.clone().into(), token_id.clone());
         
+ 
 
-        env::log_str(
-            &json!({
-            "type": "nft_on_revoke",
-            "params": {
-                "owner_id": owner_id , 
-                "nft_contract_id": nft_contract_id.to_string(), 
-                "token_id": token_id,  
-               },
-        })
-                .to_string(),
-        );
-       
-        Contract::event_std(
-            "nft_on_revoke".to_string(),
-            json!({
-                        "type": "nft_on_revoke".to_string(),
-                        "params": {
-                                    "owner_id": owner_id , 
-                                    "nft_contract_id": nft_contract_id.to_string(), 
-                                    "token_id": token_id,  
-                                    }
-                        }).to_string()
-            );
+
+
+            let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "nft_on_revoke" ,
+                "data":{
+                    "type": "nft_on_revoke".to_string(),
+                    "params":{
+                        "owner_id": owner_id , 
+                        "nft_contract_id": nft_contract_id.to_string(), 
+                        "token_id": token_id,  
+                        }
+                    }
+             }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),);
+
       }
  
  

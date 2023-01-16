@@ -14,7 +14,7 @@ use crate::sale::*;
 use near_sdk::env::STORAGE_PRICE_PER_BYTE;
 pub use crate::migrate::*;
 pub use crate::events::*;
-
+pub use crate::structures::*;
 pub use crate::dao::*;
 pub use crate::offers::*;
 pub use crate::offer_views::*;
@@ -28,7 +28,7 @@ mod events;
 mod dao;
 mod offers;
 mod offer_views;
-
+mod structures;
 
 //GAS constants to attach to calls
 const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
@@ -192,6 +192,7 @@ pub struct Contract {
  
 
 }
+
 
 //structure for whitelist information
 #[derive(BorshDeserialize, BorshSerialize,Clone)]
@@ -397,35 +398,18 @@ impl Contract {
 
         assert!(username.clone() == env::signer_account_id(),"the caller must be the same as the username sended");
            //this method just receive the info and throws a json log that will be readed by the graph
-                // env::log_str(
-                //     &json!({
-                //     "type": _type,
-                //     "params": {
-                //         "username": username,
-                //         "media": media,
-                //         "media_banner": if media_banner.is_some() {media_banner.unwrap()}else{ "".to_string()} ,
-                //         "biography": biography,
-                //         "social_media": social_media,
-                    
-                //     }
-                // })
-                //         .to_string(),
-                // );
+             
 
-                Contract::event_std(
-                    "create_edit_profile".to_string(),
-                    json!({
-                                    "type": _type,
-                                    "params": {
-                                                    "username": username,
-                                                    "media": media,
-                                                    "media_banner": if media_banner.is_some() {media_banner.unwrap()}else{ "".to_string()} ,
-                                                    "biography": biography,
-                                                    "social_media": social_media,
-                                                
-                                                }
-                                }).to_string()
-            );
+            let _media_banner =   if media_banner.is_some() {Some(media_banner.unwrap())}else{ Some("".to_string())} ;
+            let data =  AddNewProfile { username,  media, _media_banner,  biography,  social_media, };
+            let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "create_edit_profile",
+                "data": { "type": _type,"params": data}
+             }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(), );
     
        }
 
@@ -453,44 +437,40 @@ impl Contract {
                assert!(collection_id.clone().to_string() != "","the collection_id is null ");
    
            assert!(creator.clone() == env::signer_account_id(),"the caller must be the same as the creator sended");
+    
    
-        //    env::log_str(
-        //        &json!({
-        //        "type": "add_token_to_collection",
-        //        "params": {
-        //            "contract_id": contract_id,
-        //            "owner_id": owner_id,
-        //            "token_id":token_id,
-        //            "price": price.to_string(),
-        //            "title":title,
-        //            "description": description,
-        //            "media": media,
-        //            "creator":creator,
-        //            "approval_id":"0",
-        //            "collection_id":collection_id,
-        //        }
-        //    })
-        //            .to_string(),
-        //    );
-   
-           Contract::event_std(
-            "add_token_to_collection".to_string(),
-            json!({
-                        "type": "add_token_to_collection".to_string(),
-                        "params":  {
-                                        "contract_id": contract_id,
-                                        "owner_id": owner_id,
-                                        "token_id":token_id,
-                                        "price": price.to_string(),
-                                        "title":title,
-                                        "description": description,
-                                        "media": media,
-                                        "creator":creator,
-                                        "approval_id":"0",
-                                        "collection_id":collection_id,
-                                    }
-                        }).to_string()
-            );
+        //    Contract::event_std(
+        //     "add_token_to_collection".to_string(),
+        //     json!({
+        //                 "type": "add".to_string(),
+        //                 "params":  {
+        //                                 "contract_id": contract_id,
+        //                                 "owner_id": owner_id,
+        //                                 "token_id":token_id,
+        //                                 "price": price.to_string(),
+        //                                 "title":title,
+        //                                 "description": description,
+        //                                 "media": media,
+        //                                 "creator":creator,
+        //                                 "approval_id":"0",
+        //                                 "collection_id":collection_id,
+        //                             }
+        //                 }).to_string()
+        //     );
+
+
+            let approval_id ="0".to_string();
+            let data =  AddTokenToCollection {   contract_id, owner_id, token_id, price,  title,  description,  media,  creator, approval_id, collection_id, };
+
+
+            let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "add_token_to_collection",
+                "data": { "type": "add".to_string(),"params": data}
+             }).to_string(); 
+        //EMIT THE LOG
+        env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(), );
    
        }
       
@@ -532,82 +512,39 @@ impl Contract {
                assert!(description.clone().to_string() != "","the description is null ");
                assert!(media_icon.clone().to_string()!= "","the media_icon is null ");
                assert!(media_banner.clone().to_string() != "","the media_banner is null ");
-            //    assert!(twitter.clone().to_string() != "","the twitter is null ");
-            //    assert!(website.clone().to_string() != "","the website is null ");
+           
                
                 if _type == "create" {
-                    // env::log_str(
-                    //     &json!({
-                    //     "type": _type,
-                    //     "params": {                   
-                    //         "owner_id": owner_id,
-                    //         "title":title,
-                    //         "description":description,
-                    //         "media_icon": media_icon,
-                    //         "media_banner": media_banner,
-                    //         "twitter": if twitter.is_some() {twitter.unwrap()}else{ "".to_string()} ,
-                    //         "website": if website.is_some() {website.unwrap()}else{ "".to_string()} ,
-                    //         "collection_id":current_collection_id,
-                    //         "visibility":visibility,
-                    //              }
-                    //      }).to_string(),
-                    // );
+                      
+                        let data =  AddNewUserCollection {  owner_id, title,  description,   media_icon, media_banner,  twitter  ,  website , visibility,    current_collection_id,_id
+                        };
+            
+            
+                        let formated_content=&json!({   
+                            "standard": "nep171",
+                            "version": "1.0.0",
+                            "event": "add_new_user_collection",
+                            "data": { "type": _type,"params": data}
+                         }).to_string(); 
+                    //EMIT THE LOG
+                    env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(), );
 
-                    Contract::event_std(
-                        "add_new_user_collection".to_string(),
-                        json!({
-                                    "type": _type,
-                                    "params": {                   
-                                        "owner_id": owner_id,
-                                        "title":title,
-                                        "description":description,
-                                        "media_icon": media_icon,
-                                        "media_banner": media_banner,
-                                        "twitter": if twitter.is_some() {twitter.unwrap()}else{ "".to_string()} ,
-                                        "website": if website.is_some() {website.unwrap()}else{ "".to_string()} ,
-                                        "collection_id":current_collection_id,
-                                        "visibility":visibility,
-                                                }
-                                    }).to_string()
-                        );
-                    
+
+
                     self.collection_id+=1;
 
                 }else if _type =="edit"{
-                    //  env::log_str(
-                    //     &json!({
-                    //     "type": _type,
-                    //     "params": {                   
-                    //         "owner_id": owner_id,
-                    //         "title":title,
-                    //         "description":description,
-                    //         "media_icon": media_icon,
-                    //         "media_banner": media_banner,
-                    //         "twitter": twitter,
-                    //         "website": website,
-                    //         "collection_id":_id.parse::<u64>().unwrap() ,
-                    //         "visibility":visibility,
-                    //              }
-                    //      }).to_string(),
-                    // );
-
-                    Contract::event_std(
-                        "add_new_user_collection".to_string(),
-                        json!({
-                                    "type": _type,
-                                    "params": {                   
-                                        "owner_id": owner_id,
-                                        "title":title,
-                                        "description":description,
-                                        "media_icon": media_icon,
-                                        "media_banner": media_banner,
-                                        "twitter": twitter,
-                                        "website": website,
-                                        "collection_id":_id.parse::<u64>().unwrap() ,
-                                        "visibility":visibility,
-                                                }
-                                    }).to_string()
-                        );
+                    
+                    let data =  AddNewUserCollection {  owner_id, title,  description,   media_icon, media_banner,  twitter  ,  website , visibility,    current_collection_id,_id};
+                
+                    let formated_content=&json!({   
+                        "standard": "nep171",
+                        "version": "1.0.0",
+                        "event": "add_new_user_collection",
+                        "data": { "type": _type,"params": data}
+                     }).to_string(); 
+                    //EMIT THE LOG
+                    env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(), );
                 }
               
    
@@ -664,41 +601,32 @@ pub fn get_owner_last_token(&mut self ,_contract_id: AccountId,_title:String,_de
             let value = std::str::from_utf8(&result).unwrap();
             let last_token_id: String = near_sdk::serde_json::from_str(&value).unwrap();
  
-        //    env::log_str(
-        //     &json!({
-        //     "type": "new_collection",
-        //     "params": {
-        //         "contract_id": _contract_id,
-        //         "owner_id": env::signer_account_id(),
-        //         "token_id":last_token_id,
-        //         "price": "0".to_string(),
-        //         "title":_title,
-        //         "description": _description,
-        //         "media": _media,
-        //         "creator":env::signer_account_id(),
-        //         "approval_id":"0",
-        //         "collection_id":_collection_id,
-        //     }
-        // }).to_string(),);
+        
+            let price="0".to_string();
+            let approval_id="0".to_string();
+            let owner_id= env::signer_account_id();
+            let creator=env::signer_account_id();
+            let contract_id=_contract_id;
+            let token_id=last_token_id;
 
-        Contract::event_std(
-            "new_collection".to_string(),
-            json!({
-                        "type": "new_collection".to_string(),
-                        "params": {
-                            "contract_id": _contract_id,
-                            "owner_id": env::signer_account_id(),
-                            "token_id":last_token_id,
-                            "price": "0".to_string(),
-                            "title":_title,
-                            "description": _description,
-                            "media": _media,
-                            "creator":env::signer_account_id(),
-                            "approval_id":"0",
-                            "collection_id":_collection_id,
-                                    }
-                        }).to_string()
-            );
+            let title=_title;
+            let description=_description;
+            let media=_media;
+            let collection_id=_collection_id;
+
+            
+            let data =  NewCollection { 
+                  contract_id, owner_id,token_id,  price, title, description, media,  creator,  approval_id, collection_id,     
+            };
+                
+            let formated_content=&json!({   
+                "standard": "nep171",
+                "version": "1.0.0",
+                "event": "get_owner_last_token",
+                "data": { "type": "new_collection","params": data}
+             }).to_string(); 
+            //EMIT THE LOG
+            env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(), );
             
         }
     }

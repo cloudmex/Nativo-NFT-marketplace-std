@@ -94,7 +94,7 @@
 `near view $CONTRACT get_sales_by_nft_contract_id '{"nft_contract_id":"minterv2.nativo-minter.testnet","from_index":"0","limit":10 }' --accountId dokxo.testnet`
 
 ### list as sales 
-`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"93","account_id":"dev-1664228873834-30077831629755","msg":"{\"market_type\":\"on_sale\",\"price\":\"7000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1 --gas=300000000000000 `
+`near call minterv2.nativo-minter.testnet nft_approve '{"token_id":"93","account_id":"events.nativo-market.testnet","msg":"{\"market_type\":\"on_sale\",\"price\":\"7000000000000000000000\",\"title\":\"flames\",\"media\":\"bafybeib6hehfeyl5tmtj7w4uqwhtfhlyavmnkro5xdh4s224fiqlrykcay\",\"creator_id\":\"dokxo.testnet\"}"}' --accountId dokxo.testnet --deposit 0.1 --gas=300000000000000 `
 
 
 ## Offer for a token
