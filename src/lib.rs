@@ -459,15 +459,26 @@ impl Contract {
         //     );
 
 
-            let approval_id ="0".to_string();
-            let data =  AddTokenToCollection {   contract_id, owner_id, token_id, price,  title,  description,  media,  creator, approval_id, collection_id, };
+          //1  let approval_id ="0".to_string();
+           // let data =  AddTokenToCollection {   contract_id, owner_id, token_id, price.to_string(),  title,  description,  media,  creator, approval_id, collection_id, };
 
 
             let formated_content=&json!({   
                 "standard": "nep171",
                 "version": "1.0.0",
                 "event": "add_token_to_collection",
-                "data": { "type": "add".to_string(),"params": data}
+                "data": { "type": "add".to_string(),"params":  {
+                                                     "contract_id": contract_id,
+                                                     "owner_id": owner_id,
+                                                     "token_id":token_id,
+                                                     "price": price.to_string(),
+                                                     "title":title,
+                                                     "description": description,
+                                                     "media": media,
+                                                     "creator":creator,
+                                                     "approval_id":"0",
+                                                     "collection_id":collection_id,
+                                                 }}
              }).to_string(); 
         //EMIT THE LOG
         env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(), );

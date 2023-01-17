@@ -21,12 +21,12 @@ pub struct AddTokenToCollection {
     pub contract_id: AccountId,
     pub owner_id: AccountId,
     pub token_id: TokenId,
-    pub price:u128,
+    pub price:String,
     pub title:String,
     pub description:String,
     pub media:String,
     pub creator:AccountId,
-    pub collection_id:u64,
+    pub collection_id:String,
     pub approval_id:String,
     
 }

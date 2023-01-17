@@ -86,7 +86,7 @@ impl Contract {
                 "standard": "nep171",
                 "version": "1.0.0",
                 "event": "List_as_sale",
-                "data":[{"timestamp":env::block_timestamp(),"token_info":data }]
+                "data":{"timestamp":env::block_timestamp(),"token_info":data }
         }).to_string(); 
         //EMIT THE LOG
         env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),
@@ -99,7 +99,7 @@ impl Contract {
                 "standard": "nep171",
                 "version": "1.0.0",
                 "event": "List_as_offer",
-                "data":[{"timestamp":env::block_timestamp(),"token_info":data }]
+                "data":{"timestamp":env::block_timestamp(),"token_info":data }
         }).to_string(); 
         //EMIT THE LOG
         env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),

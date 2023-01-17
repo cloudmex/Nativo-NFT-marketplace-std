@@ -123,3 +123,7 @@
 
 
 
+### Set info for the profile  
+`near call $CONTRACT add_new_profile '{"username": "dokxo.testnet","media": "Qmdx4EcG3mMKwLSktx9VyTB1ZueH1f4AKSKoSqr2s38FQQ","media_banner": "QmeyndES1Toq4ee8tTsHKkUL3pn7rprhfQNaL8XmeUMwYE","biography": "its dokxo description","social_media": "itsdokxo","_type": "edit"}' --accountId dokxo.testnet`
+
+
