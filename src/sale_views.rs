@@ -208,6 +208,20 @@ impl Contract {
         //we're not guaranteed that the unique sale ID passed in will be valid.
         self.sales.get(&nft_contract_token)
     }
+    //get a sale information for a given unique sale ID (contract + DELIMITER + token ID)
+    pub fn get_sale_tg(& mut self, nft_contract_token: ContractAndTokenId)   {
+        //try and get the sale object for the given unique sale ID. Will return an option since
+        //we're not guaranteed that the unique sale ID passed in will be valid.
+        let formated_content=&json!({   
+            "standard": "nep171",
+            "version": "1.0.0",
+            "event": "get_sale_tg" ,
+            "data":self.sales.get(&nft_contract_token),
+    }).to_string(); 
+        
+    env::log_str(&format!("EVENT_JSON:{}",formated_content).to_string(),
+);
+    }
 
     //get a sale information for a given unique sale ID (contract + DELIMITER + token ID)
     pub fn get_salear(&self, nft_contract_token: ContractAndTokenId) -> Option<Sale> {
